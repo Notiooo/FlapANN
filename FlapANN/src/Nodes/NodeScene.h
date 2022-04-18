@@ -1,7 +1,7 @@
 #ifndef NODESCENE_H
 #define NODESCENE_H
 
-#include <list>
+#include <vector>
 #include <memory>
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Transformable.hpp>
@@ -53,9 +53,7 @@ class NodeScene : public sf::Drawable, public sf::Transformable, private sf::Non
 {
 public:
 	using Node = std::unique_ptr<NodeScene>;
-
 	NodeScene();
-	virtual ~NodeScene() override = default;
 
 	/**
 	 * \brief Steals ownership, and puts it into the vector of pinned nodes
@@ -75,14 +73,12 @@ public:
 	 * After this operation, this node is no longer a mParent "node".
 	 */
 	Node unpinNode(const NodeScene& node);
-
-	// Returns absolute position in the game plane
 	
 	/**
 	 * \brief A function that calculates the absolute position of this node.
 	 * \return Returns the absolute position of the node object on the screen.
 	 */
-	sf::Vector2f getAbsolutePosition() const;
+	sf::Vector2f absolutePosition() const;
 
 	
 	// ====== Drawing Scenes ====== //
@@ -114,7 +110,7 @@ public:
 	 *
 	 * In comparison to draw() this function is not derived. It is used to update all mPinnedNodes
 	 */
-	virtual void update(sf::Time deltaTime);
+	virtual void update(const sf::Time& deltaTime);
 
 	/**
 	 * \brief Updates the logic of this node only
@@ -122,7 +118,7 @@ public:
 	 *
 	 * Works analogues to the drawThis(), updates all things related to itself
 	 */
-	virtual void updateThis(sf::Time deltaTime);
+	virtual void updateThis(const sf::Time& deltaTime);
 
 	
 	// ====== Handling events ====== //

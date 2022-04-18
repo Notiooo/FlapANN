@@ -43,7 +43,7 @@ NodeScene::Node NodeScene::unpinNode(const NodeScene& node_scene)
 	return stolenNode;
 }
 
-sf::Vector2f NodeScene::getAbsolutePosition() const
+sf::Vector2f NodeScene::absolutePosition() const
 {
 	// To do this we have to add all transforms till the top of the hierarchy.
 	sf::Transform transform; //sf::Transform::Identity;
@@ -78,7 +78,7 @@ void NodeScene::drawThis(sf::RenderTarget& target, sf::RenderStates states) cons
 	// Nothing here
 }
 
-void NodeScene::update(sf::Time deltaTime)
+void NodeScene::update(const sf::Time& deltaTime)
 {
 	// We starting by updating this object
 	updateThis(deltaTime);
@@ -88,7 +88,7 @@ void NodeScene::update(sf::Time deltaTime)
 		pinnedNode->update(deltaTime);
 }
 
-void NodeScene::updateThis(sf::Time deltaTime)
+void NodeScene::updateThis(const sf::Time& deltaTime)
 {
 	// Nothing here
 }

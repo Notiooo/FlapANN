@@ -2,8 +2,9 @@
 #include "Game.h"
 
 const sf::Time Game::TIME_PER_FRAME = sf::seconds(1.f / 60.f);
-const float Game::SCREEN_WIDTH = 1280;
-const float Game::SCREEN_HEIGHT = 720;
+const int Game::SCREEN_WIDTH = 144;
+const int Game::SCREEN_HEIGHT = 256;
+const int Game::SCREEN_SCALE = 3;
 
 
 Game::Game():
@@ -12,6 +13,9 @@ Game::Game():
 	// Limit the framerate to 60 frames per second
 	mGameWindow.setFramerateLimit(60);
 	mGameWindow.setKeyRepeatEnabled(false);
+
+	// Makes window bigger
+	mGameWindow.setSize({ SCREEN_WIDTH * SCREEN_SCALE, SCREEN_HEIGHT * SCREEN_SCALE });
 
 	// load resources
 	loadResources();

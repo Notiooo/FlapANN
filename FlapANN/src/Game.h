@@ -39,7 +39,7 @@ private:
 	 * of the speed at which subsequent iterations of the program are executed.
 	 * (distance = speed * time)
 	 */
-	void update(sf::Time deltaTime);
+	void update(const sf::Time& deltaTime);
 
 
 	/**
@@ -63,8 +63,9 @@ private:
 
 	static const sf::Time TIME_PER_FRAME; //!< The time it takes for one game frame to be generated.
 
-	static const float SCREEN_WIDTH; //!< Default game window width
-	static const float SCREEN_HEIGHT; //!< Default game window height
+	static const int SCREEN_WIDTH; //!< Default game window width
+	static const int SCREEN_HEIGHT; //!< Default game window height
+	static const int SCREEN_SCALE; //!< Window size multiplier
 
 	sf::RenderWindow mGameWindow; //!< The window to which the game image should be drawn.
 
@@ -74,6 +75,8 @@ private:
 	 * This saves the memory used so as not to load the same font multiple times in multiple places.
 	 */
 	FontManager mFonts;
+
+	TextureManager mTextures;
 };
 
 
