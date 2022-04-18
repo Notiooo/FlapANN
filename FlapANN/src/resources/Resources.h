@@ -13,6 +13,9 @@
  */
 enum class Textures_ID
 {
+	Bird_Red,
+	Bird_Blue,
+	Bird_Orange,
 	// No Textures yet
 };
 
