@@ -16,6 +16,7 @@ enum class Textures_ID
 	Bird_Red,
 	Bird_Blue,
 	Bird_Orange,
+	Pipe_Green,
 	// No Textures yet
 };
 
