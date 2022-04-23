@@ -12,47 +12,33 @@ PipesGenerator::PipesGenerator(const TextureManager& textures, const sf::Vector2
 	yCoordinate.maxPipeOffset = screenSize.y / 2;
 }
 
-sf::Vector2f PipesGenerator::calculateRndPipeOffset() const
+sf::Vector2f PipesGenerator::randomPipeOffset() const
 {
-	const std::uniform_int_distribution generatePipeXPos(xCoordinate.minPipeOffset, xCoordinate.maxPipeOffset);
-	const std::uniform_int_distribution generatePipeYPos(yCoordinate.minPipeOffset, yCoordinate.maxPipeOffset);
+	const std::uniform_real_distribution randomizedXPosition(xCoordinate.minPipeOffset, xCoordinate.maxPipeOffset);
+	const std::uniform_real_distribution randomizedYPosition(yCoordinate.minPipeOffset, yCoordinate.maxPipeOffset);
 
-	auto pipeXOffset = static_cast<float>(generatePipeXPos(engine));
-	auto upperPipeHeight = static_cast<float>(generatePipeYPos(engine));
+	auto pipeXOffset = randomizedXPosition(engine);
+	auto upperPipeHeight = randomizedYPosition(engine);
 
 	return {pipeXOffset, upperPipeHeight};
 }
 
-float PipesGenerator::getLastPipeXPosition() const
+sf::Vector2f PipesGenerator::lastPipePosition() const
 {
-	return mPipes.empty() ? 0.f : mPipes.back()->getPosition().x;
+	return mPipes.empty() ? sf::Vector2f{0.f, 0.f} : mPipes.back()->getPosition();
 }
 
-std::unique_ptr<Pipe> PipesGenerator::createBottomPipe(const sf::Vector2f& offset,
-                                                       const float& prevPipeXPos) const
+std::unique_ptr<Pipe> PipesGenerator::createNextPipeWithOffset(const sf::Vector2f& offset, Textures_ID pipeTextureId) const
 {
-	auto [pipeXOffset, upperPipeHeight] = offset;
-	auto bottomPipe(std::make_unique<Pipe>(mTextures.getResourceReference(Textures_ID::Pipe_Green)));
-	bottomPipe->setPosition({prevPipeXPos + pipeXOffset, upperPipeHeight + offsetBetweenPipes});
+	const auto& pipeTexture = mTextures.getResourceReference(pipeTextureId);
+	auto pipe = std::make_unique<Pipe>(pipeTexture);
+	pipe->setPosition({lastPipePosition().x + offset.x, offset.y});
+	pipe->setOrigin(static_cast<float>(pipeTexture.getSize().x) / 2.f, 0);
 
-	return std::move(bottomPipe);
+	return pipe;
 }
 
-std::unique_ptr<Pipe> PipesGenerator::createUpperPipe(const sf::Vector2f& offset,
-                                                      const float& prevPipeXPos) const
-{
-	auto [pipeXOffset, upperPipeHeight] = offset;
-	auto upperPipe(std::make_unique<Pipe>(mTextures.getResourceReference(Textures_ID::Pipe_Green)));
-	const sf::FloatRect bounds = upperPipe->getPipeBounds();
-
-	upperPipe->setPosition({prevPipeXPos + pipeXOffset, upperPipeHeight});
-	upperPipe->setRotation(180);
-	upperPipe->setOrigin(bounds.width, 0);
-
-	return std::move(upperPipe);
-}
-
-bool PipesGenerator::isPipeOutOfSight() const
+bool PipesGenerator::isFrontPipeOutOfSight() const
 {
 	const auto& pipe = mPipes.front();
 	return !mPipes.empty() && pipe->getPosition().x + pipe->getPipeBounds().width < 0.f;
@@ -65,14 +51,17 @@ bool PipesGenerator::isLastPipeInsideWindowFrame() const
 
 void PipesGenerator::generatePipe()
 {
-	const sf::Vector2f& offset = calculateRndPipeOffset();
-	const float& prevPipeXPos = getLastPipeXPosition();
+	const sf::Vector2f& offset = randomPipeOffset();
 
-	mPipes.emplace_back(createBottomPipe(offset, prevPipeXPos));
-	mPipes.emplace_back(createUpperPipe(offset, prevPipeXPos));
+	const auto& bottomPipe = createNextPipeWithOffset({ offset.x, offset.y + offsetBetweenPipes / 2.f });
+	const auto& upperPipe = createNextPipeWithOffset({ offset.x, offset.y - offsetBetweenPipes / 2.f });;
+	upperPipe->setRotation(180);
+
+	mPipes.emplace_back(std::move(bottomPipe));
+	mPipes.emplace_back(std::move(upperPipe));
 }
 
-void PipesGenerator::deletePipes()
+void PipesGenerator::deleteFrontPipe()
 {
 	mPipes.pop_front();
 }
@@ -91,16 +80,16 @@ void PipesGenerator::updateThis(const sf::Time& deltaTime)
 	{
 		generatePipe();
 	}
-	if (isPipeOutOfSight())
+	if (isFrontPipeOutOfSight())
 	{
-		deletePipes();
+		deleteFrontPipe();
 	}
 	updatePipesPosition(deltaTime);
 }
 
 void PipesGenerator::drawThis(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	for (auto& pipe : mPipes)
+	for (const auto& pipe : mPipes)
 	{
 		pipe->draw(target, states);
 	}

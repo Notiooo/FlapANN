@@ -12,11 +12,6 @@ void Pipe::loadResources(TextureManager& textureManager)
 	textureManager.storeResource(Textures_ID::Pipe_Green, "resources/textures/pipe_green.png");
 }
 
-void Pipe::updateThis(const sf::Time& deltaTime)
-{
-	NodeMoveable::updateThis(deltaTime);
-}
-
 void Pipe::drawThis(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	target.draw(mPipe, states);

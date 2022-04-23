@@ -11,8 +11,8 @@ class PipesGenerator : public NodeScene
 	 */
 	struct PipeOffset
 	{
-		int minPipeOffset{0};
-		int maxPipeOffset{0};
+		float minPipeOffset;
+		float maxPipeOffset;
 	};
 
 public:
@@ -21,7 +21,7 @@ public:
 	 * \param textures Texture manager holds all the available textures in the game.
 	 * \param clippingPoints pipe clipping points (beginning and end of window).
 	 */
-	explicit PipesGenerator(const TextureManager& textures, const sf::Vector2i& screenSize);
+	PipesGenerator(const TextureManager& textures, const sf::Vector2i& screenSize);
 
 	/**
 	 * \brief Updates the logic of the pipe. Including positions on the screen or
@@ -44,13 +44,23 @@ private:
 	 * \brief Calculates random pipe offset using random number generator. 
 	 * \return x and y offset values.
 	 */
-	[[nodiscard]] inline sf::Vector2f calculateRndPipeOffset() const;
+	[[nodiscard]] inline sf::Vector2f randomPipeOffset() const;
 
 	/**
 	 * \brief Retrieves the position of the last pipe added to the deque.
 	 * \return Position (x, y) of the pipe.
 	 */
-	[[nodiscard]] inline float getLastPipeXPosition() const;
+	[[nodiscard]] inline sf::Vector2f lastPipePosition() const;
+
+
+	/**
+	 * \brief Creates another pipe that is offset from the last pipe in the deque by the given offset.
+	 * \param offset Offset from the last pipe in the deque
+	 * \param pipeTextureId Pipe texture id
+	 * \return Newly created pipe
+	 */
+	[[nodiscard]] std::unique_ptr<Pipe> createNextPipeWithOffset(const sf::Vector2f& offset,
+	                                 Textures_ID pipeTextureId = Textures_ID::Pipe_Green) const;
 
 	/**
 	 * \brief It generates both bottom and upper pipe.
@@ -60,7 +70,7 @@ private:
 	/**
 	 * \brief Deletes pipes outside of the window frame.
 	 */
-	void deletePipes();
+	void deleteFrontPipe();
 
 	/**
 	 * \brief Updates pipes' position on the screen.
@@ -69,28 +79,10 @@ private:
 	void updatePipesPosition(const sf::Time& deltaTime) const;
 
 	/**
-	 * \brief Creates bottom pipe. It also prepares its properties,
-	 *		  such as position or origin.
-	 * \param offset Randomized offset of the pipe.
-	 * \param prevPipeOffset Previous pipe offset.
-	 * \return A pointer to newly created pipe.
-	 */
-	std::unique_ptr<Pipe> createBottomPipe(const sf::Vector2f& offset, const float& prevPipeXPos) const;
-
-	/**
-	 * \brief Creates bottom pipe. It also prepares its properties,
-	 *		  such as position or origin.
-	 * \param offset Randomized offset of the pipe.
-	 * \param prevPipeOffset Previous pipe offset.
-	 * \return A pointer to newly created pipe.
-	 */
-	std::unique_ptr<Pipe> createUpperPipe(const sf::Vector2f& offset, const float& prevPipeXPos) const;
-
-	/**
 	 * \brief Determines if the pipe is outside the window area.
 	 * \return True if the bird is out of sight. False otherwise.
 	 */
-	bool isPipeOutOfSight() const;
+	bool isFrontPipeOutOfSight() const;
 
 	/**
 	 * \brief Determines whether a pipe should be generated at a given time.
@@ -101,8 +93,8 @@ private:
 private:
 	const TextureManager& mTextures;
 
-	PipeOffset xCoordinate{60, 100};
-	PipeOffset yCoordinate{30,};
+	PipeOffset xCoordinate{ 60.f, 100.f };
+	PipeOffset yCoordinate{ 30.f, 0.f };
 
 	/** Used to determine pipe clipping point */
 	int mClippingPoint;

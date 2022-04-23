@@ -19,14 +19,6 @@ public:
 	static void loadResources(TextureManager& textureManager);
 
 	/**
-	 * \brief Updates the logic of the pipe like positions on the screen.
-	 * \param deltaTime the time that has passed since the game was last updated
-	 *
-	 * Works analogues to the drawThis(), updates all things related to itself.
-	 */
-	void updateThis(const sf::Time& deltaTime) override;
-
-	/**
 	 * \brief Draws the pipe to the passed target.
 	 * \param target where it should be drawn to
 	 * \param states provides information about rendering process (transform, shader, blend mode).
