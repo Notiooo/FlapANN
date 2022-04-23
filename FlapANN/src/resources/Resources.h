@@ -17,6 +17,7 @@ enum class Textures_ID
 	Bird_Blue,
 	Bird_Orange,
 	Background_Day,
+	Ground,
 };
 
 /**

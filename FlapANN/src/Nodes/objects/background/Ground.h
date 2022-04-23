@@ -2,15 +2,15 @@
 #include "nodes/NodeScrollable.h"
 #include "resources/Resources.h"
 
-class Background final : public NodeScrollable
+class Ground final : public NodeScrollable
 {
 public:
 	/**
-	 * \brief The main constructor of the background
+	 * \brief The main constructor of the ground
 	 * \param textureManager Texture storage manager
-	 * \param scrollSpeed The speed at which the background moves
+	 * \param scrollSpeed The speed at which the ground moves
 	 */
-	Background(const TextureManager& textureManager, const float& scrollSpeed = 10.f);
+	Ground(const TextureManager& textureManager, const float& scrollSpeed = 40.f);
 
 	/**
 	 * \brief Loads the required resources for this class

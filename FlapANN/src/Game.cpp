@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "nodes/objects/bird/Bird.h"
 #include "nodes/objects/background/Background.h"
+#include "nodes/objects/background/Ground.h"
 
 const sf::Time Game::TIME_PER_FRAME = sf::seconds(1.f / 60.f);
 const int Game::SCREEN_WIDTH = 144;
@@ -83,4 +84,5 @@ void Game::loadResources()
 
 	Bird::loadResources(mTextures);
 	Background::loadResources(mTextures);
+	Ground::loadResources(mTextures);
 }
