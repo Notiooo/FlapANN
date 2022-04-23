@@ -17,7 +17,8 @@ enum class Textures_ID
 	Bird_Blue,
 	Bird_Orange,
 	Pipe_Green,
-	// No Textures yet
+	Background_Day,
+	Ground,
 };
 
 /**
