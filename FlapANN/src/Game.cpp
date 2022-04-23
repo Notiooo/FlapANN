@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Game.h"
 #include "nodes/objects/bird/Bird.h"
+#include "nodes/objects/pipe/Pipe.h"
 #include "nodes/objects/background/Background.h"
 #include "nodes/objects/background/Ground.h"
 
@@ -83,6 +84,7 @@ void Game::loadResources()
 	mFonts.storeResource(Fonts_ID::ArialNarrow, "resources/fonts/arial_narrow.ttf");
 
 	Bird::loadResources(mTextures);
-	Background::loadResources(mTextures);
+	Pipe::loadResources(mTextures);
+  Background::loadResources(mTextures);
 	Ground::loadResources(mTextures);
 }
