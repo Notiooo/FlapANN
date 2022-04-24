@@ -33,6 +33,11 @@ public:
 	void updateThis(const sf::Time& deltaTime) override;
 
 	/**
+	 * \brief Updates sliders and options related to PipesGenerator
+	 */
+	void updateImGuiThis() override;
+
+	/**
 	 * \brief Draws the pipe to the passed target.
 	 * \param target where it should be drawn to
 	 * \param states provides information about rendering process (transform, shader, blend mode)
@@ -90,6 +95,11 @@ private:
 	 */
 	bool isLastPipeInsideWindowFrame() const;
 
+	/**
+	 * \brief Updates the slider that sets the distance value between the upper and bottom pipes.
+	 */
+	void updateImGuiOffsetBetweenLowerAndUpperPipe();
+
 private:
 	const TextureManager& mTextures;
 
@@ -100,7 +110,7 @@ private:
 	int mClippingPoint;
 
 	/**	Distance between bottom and top pipe */
-	const float& offsetBetweenPipes{40};
+	float offsetBetweenPipes{40};
 
 	/** Produces high quality unsigned integer random numbers */
 	static std::mt19937 engine;

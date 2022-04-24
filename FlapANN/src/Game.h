@@ -43,6 +43,12 @@ private:
 
 
 	/**
+	 * \brief Updates the ImGui related code
+	 */
+	void updateImGui();
+
+
+	/**
 	 * \brief Displays the game on the image of the game window
 	 *
 	 * It collects all the game elements that you want to display in the current
@@ -63,9 +69,10 @@ private:
 
 	static const sf::Time TIME_PER_FRAME; //!< The time it takes for one game frame to be generated.
 
-	static const int SCREEN_WIDTH; //!< Default game window width
-	static const int SCREEN_HEIGHT; //!< Default game window height
+	static const int GAME_WIDTH; //!< Default game window width
+	static const int GAME_HEIGHT; //!< Default game window height
 	static const int SCREEN_SCALE; //!< Window size multiplier
+	static const int IMGUI_SIDEMENU_WIDTH; //!< Width of the additional imgui sidemenu
 
 	sf::RenderWindow mGameWindow; //!< The window to which the game image should be drawn.
 

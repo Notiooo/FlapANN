@@ -1,28 +1,35 @@
 #include "pch.h"
 #include "Game.h"
+
+#include <imgui-sfml/imgui-SFML.h>
+#include <imgui/imgui.h>
+
 #include "nodes/objects/bird/Bird.h"
 #include "nodes/objects/pipe/Pipe.h"
 #include "nodes/objects/background/Background.h"
 #include "nodes/objects/background/Ground.h"
 
 const sf::Time Game::TIME_PER_FRAME = sf::seconds(1.f / 60.f);
-const int Game::SCREEN_WIDTH = 144;
-const int Game::SCREEN_HEIGHT = 256;
+const int Game::GAME_WIDTH = 144;
+const int Game::GAME_HEIGHT = 256;
 const int Game::SCREEN_SCALE = 3;
+const int Game::IMGUI_SIDEMENU_WIDTH = GAME_WIDTH;
 
 
 Game::Game():
-	mGameWindow(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "FlapANN", sf::Style::Titlebar | sf::Style::Close)
+	mGameWindow(sf::VideoMode(GAME_WIDTH + IMGUI_SIDEMENU_WIDTH, GAME_HEIGHT), "FlapANN", sf::Style::Titlebar | sf::Style::Close)
 {
 	// Limit the framerate to 60 frames per second
 	mGameWindow.setFramerateLimit(60);
 	mGameWindow.setKeyRepeatEnabled(false);
 
 	// Makes window bigger
-	mGameWindow.setSize({ SCREEN_WIDTH * SCREEN_SCALE, SCREEN_HEIGHT * SCREEN_SCALE });
+	mGameWindow.setSize({ (GAME_WIDTH + IMGUI_SIDEMENU_WIDTH) * SCREEN_SCALE, GAME_HEIGHT * SCREEN_SCALE });
 
 	// load resources
 	loadResources();
+
+	ImGui::SFML::Init(mGameWindow);
 }
 
 void Game::run()
@@ -44,8 +51,12 @@ void Game::run()
 			processEvents();
 			update(TIME_PER_FRAME);
 		}
+		ImGui::SFML::Update(mGameWindow, frameTimeElapsed);
+		updateImGui();
 		render();
 	}
+	mGameWindow.close();
+	ImGui::SFML::Shutdown();
 }
 
 void Game::processEvents()
@@ -55,14 +66,33 @@ void Game::processEvents()
 	{
 		if (event.type == sf::Event::Closed)
 			mGameWindow.close();
+
+		ImGui::SFML::ProcessEvent(event);
+
+		// Ignore all events that are related directly with ImGui
+		if (ImGui::IsWindowHovered(ImGuiFocusedFlags_AnyWindow) || ImGui::IsAnyItemActive())
+			return;
 		
 		// process event there
 	}
 }
 
-void Game::update(sf::Time deltaTime)
+void Game::update(const sf::Time& deltaTime)
 {
 	// update game there
+}
+
+void Game::updateImGui()
+{
+	ImGui::SetNextWindowPos(ImVec2(GAME_WIDTH * SCREEN_SCALE, 0), ImGuiCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(IMGUI_SIDEMENU_WIDTH * SCREEN_SCALE, GAME_HEIGHT * SCREEN_SCALE), ImGuiCond_Once);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f)); 
+	ImGui::Begin("DefaultSettings", nullptr, 
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | 
+		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+	ImGui::Text("Game settings:");
+	ImGui::End();
+	ImGui::PopStyleColor();
 }
 
 void Game::render()
@@ -73,6 +103,10 @@ void Game::render()
 
 	// display the game there
 	// ...
+
+	mGameWindow.pushGLStates();
+	ImGui::SFML::Render(mGameWindow);
+	mGameWindow.popGLStates();
 
 	// display to the window
 	mGameWindow.display();
@@ -85,6 +119,6 @@ void Game::loadResources()
 
 	Bird::loadResources(mTextures);
 	Pipe::loadResources(mTextures);
-  Background::loadResources(mTextures);
+	Background::loadResources(mTextures);
 	Ground::loadResources(mTextures);
 }

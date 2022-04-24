@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "PipesGenerator.h"
 #include <random>
+#include <imgui/imgui.h>
 
 std::random_device PipesGenerator::rndDevice;
 std::mt19937 PipesGenerator::engine(rndDevice());
@@ -53,8 +54,8 @@ void PipesGenerator::generatePipe()
 {
 	const sf::Vector2f& offset = randomPipeOffset();
 
-	const auto& bottomPipe = createNextPipeWithOffset({ offset.x, offset.y + offsetBetweenPipes / 2.f });
-	const auto& upperPipe = createNextPipeWithOffset({ offset.x, offset.y - offsetBetweenPipes / 2.f });;
+	auto bottomPipe = createNextPipeWithOffset({ offset.x, offset.y + offsetBetweenPipes / 2.f });
+	auto upperPipe = createNextPipeWithOffset({ offset.x, offset.y - offsetBetweenPipes / 2.f });;
 	upperPipe->setRotation(180);
 
 	mPipes.emplace_back(std::move(bottomPipe));
@@ -85,6 +86,23 @@ void PipesGenerator::updateThis(const sf::Time& deltaTime)
 		deleteFrontPipe();
 	}
 	updatePipesPosition(deltaTime);
+}
+
+void PipesGenerator::updateImGuiOffsetBetweenLowerAndUpperPipe()
+{
+	const static auto& sliderText = "Offset between upper and lower pipe";
+	const static auto& textSize = ImGui::CalcTextSize(sliderText);
+
+	ImGui::PushItemWidth(-textSize.x);
+	ImGui::SliderFloat(sliderText, &offsetBetweenPipes, 0.f, 100.f);
+}
+
+void PipesGenerator::updateImGuiThis()
+{
+	if(ImGui::CollapsingHeader("PipeGenerator"))
+	{
+		updateImGuiOffsetBetweenLowerAndUpperPipe();
+	}
 }
 
 void PipesGenerator::drawThis(sf::RenderTarget& target, sf::RenderStates states) const

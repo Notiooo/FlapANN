@@ -110,7 +110,7 @@ public:
 	 *
 	 * In comparison to draw() this function is not derived. It is used to update all mPinnedNodes
 	 */
-	virtual void update(const sf::Time& deltaTime);
+	void update(const sf::Time& deltaTime);
 
 	/**
 	 * \brief Updates the logic of this node only
@@ -120,6 +120,17 @@ public:
 	 */
 	virtual void updateThis(const sf::Time& deltaTime);
 
+	/**
+	 * \brief Updates the imgui logic of this node and the pinned nodes.
+	 */
+	void updateImGui();
+
+	/**
+	 * \brief Updates the imgui logic of this node only
+	 *
+	 * Works analogues to the drawThis(), updates all things related to itself
+	 */
+	virtual void updateImGuiThis();
 	
 	// ====== Handling events ====== //
 	

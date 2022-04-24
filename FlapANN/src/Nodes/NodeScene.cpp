@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
+#include <imgui/imgui.h>
 
 NodeScene::NodeScene() :
 	mPinnedNodes(),
@@ -86,6 +87,23 @@ void NodeScene::update(const sf::Time& deltaTime)
 	// And then we update all mPinnedNodes -- which updates all nodes pinned to them
 	for (auto& pinnedNode : mPinnedNodes)
 		pinnedNode->update(deltaTime);
+}
+
+void NodeScene::updateImGui()
+{
+	// We starting by updating this object
+	ImGui::Begin("DefaultSettings");
+	updateImGuiThis();
+	ImGui::End();
+
+	// And then we update all mPinnedNodes -- which updates all nodes pinned to them
+	for (auto& pinnedNode : mPinnedNodes)
+		pinnedNode->updateImGui();
+}
+
+void NodeScene::updateImGuiThis()
+{
+	// Nothing here
 }
 
 void NodeScene::updateThis(const sf::Time& deltaTime)
