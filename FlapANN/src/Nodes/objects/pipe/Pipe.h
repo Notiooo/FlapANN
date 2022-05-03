@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PipeMovePattern.h"
 #include "nodes/NodeMoveable.h"
 #include "resources/Resources.h"
 
@@ -9,8 +10,9 @@ public:
 	/**
 	 * \brief The main constructor of the pipe.
 	 * \param pipeTexture The texture the pipe should take.
+	 * \param movePattern Additional movement pattern
 	 */
-	explicit Pipe(const sf::Texture& pipeTexture);
+	Pipe(const sf::Texture& pipeTexture, MovePattern movePattern = MovePattern());
 
 	/**
 	 * \brief Loads the required resources for this class.
@@ -26,6 +28,13 @@ public:
 	void drawThis(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 	/**
+	 * \brief Updates the logic of the pipe. Including positions on the screen or
+	 *		  the deletion or generation of the pipe.
+	 * \param deltaTime the time that has passed since the game was last updated
+	 */
+	void updateThis(const sf::Time& deltaTime) override;
+
+	/**
 	 * \brief Returns the bounds of the pipe sprite.
 	 * \return Width and height of the sprite.
 	 */
@@ -33,4 +42,6 @@ public:
 
 private:
 	sf::Sprite mPipe;
+	MovePattern mCurrentMovePattern;
+
 };

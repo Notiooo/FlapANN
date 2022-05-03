@@ -32,7 +32,7 @@ sf::Vector2f PipesGenerator::lastPipePosition() const
 std::unique_ptr<Pipe> PipesGenerator::createNextPipeWithOffset(const sf::Vector2f& offset, Textures_ID pipeTextureId) const
 {
 	const auto& pipeTexture = mTextures.getResourceReference(pipeTextureId);
-	auto pipe = std::make_unique<Pipe>(pipeTexture);
+	auto pipe = std::make_unique<Pipe>(pipeTexture, mMovePattern);
 	pipe->setPosition({lastPipePosition().x + offset.x, offset.y});
 	pipe->setOrigin(static_cast<float>(pipeTexture.getSize().x) / 2.f, 0);
 
@@ -54,8 +54,8 @@ void PipesGenerator::generatePipe()
 {
 	const sf::Vector2f& offset = randomPipeOffset();
 
-	auto bottomPipe = createNextPipeWithOffset({ offset.x, offset.y + offsetBetweenPipes / 2.f });
-	auto upperPipe = createNextPipeWithOffset({ offset.x, offset.y - offsetBetweenPipes / 2.f });;
+	auto bottomPipe = createNextPipeWithOffset({ offset.x, offset.y + mOffsetBetweenPipes / 2.f });
+	auto upperPipe = createNextPipeWithOffset({ offset.x, offset.y - mOffsetBetweenPipes / 2.f });;
 	upperPipe->setRotation(180);
 
 	mPipes.emplace_back(std::move(bottomPipe));
@@ -94,7 +94,52 @@ void PipesGenerator::updateImGuiOffsetBetweenLowerAndUpperPipe()
 	const static auto& textSize = ImGui::CalcTextSize(sliderText);
 
 	ImGui::PushItemWidth(-textSize.x);
-	ImGui::SliderFloat(sliderText, &offsetBetweenPipes, 0.f, 100.f);
+	ImGui::SliderFloat(sliderText, &mOffsetBetweenPipes, 0.f, 100.f);
+}
+
+void PipesGenerator::updateImGuiMovePattern()
+{
+	ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+	if (ImGui::TreeNode("Pattern"))
+	{
+		const auto selected = static_cast<int>(mMovePattern.pattern());
+		for (auto patternIndex = static_cast<int>(MovePattern::Pattern::None);
+		     patternIndex < static_cast<int>(MovePattern::Pattern::Last); ++patternIndex)
+		{
+			auto pattern = static_cast<MovePattern::Pattern>(patternIndex);
+			if (ImGui::Selectable(toString(pattern).c_str(), selected == patternIndex))
+			{
+				mMovePattern.applyPattern(pattern);
+			}
+		}
+		ImGui::TreePop();
+	}
+}
+
+void PipesGenerator::updateImGuiMovePatternRange()
+{
+	const static auto& sliderText = "Range of the movement pattern";
+	const static auto& textSize = ImGui::CalcTextSize(sliderText);
+	auto movePatternRange = mMovePattern.patternRange();
+
+	ImGui::PushItemWidth(-textSize.x);
+	if(ImGui::SliderFloat(sliderText, &movePatternRange, 0.f, 2.f))
+	{
+		mMovePattern.patternRange(movePatternRange);
+	}
+}
+
+void PipesGenerator::updateImGuiMovePatternSpeed()
+{
+	const static auto& sliderText = "Speed of the movement pattern";
+	const static auto& textSize = ImGui::CalcTextSize(sliderText);
+	auto movePatternSpeed = mMovePattern.patternSpeed();
+
+	ImGui::PushItemWidth(-textSize.x);
+	if(ImGui::SliderFloat(sliderText, &movePatternSpeed, 0.f, 8.f))
+	{
+		mMovePattern.patternSpeed(movePatternSpeed);
+	}
 }
 
 void PipesGenerator::updateImGuiThis()
@@ -102,6 +147,14 @@ void PipesGenerator::updateImGuiThis()
 	if(ImGui::CollapsingHeader("PipeGenerator"))
 	{
 		updateImGuiOffsetBetweenLowerAndUpperPipe();
+
+		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+		if (ImGui::CollapsingHeader("Move pattern settings"))
+		{
+			updateImGuiMovePattern();
+			updateImGuiMovePatternRange();
+			updateImGuiMovePatternSpeed();
+		}
 	}
 }
 

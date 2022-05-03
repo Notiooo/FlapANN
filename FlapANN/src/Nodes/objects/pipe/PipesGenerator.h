@@ -24,11 +24,8 @@ public:
 	PipesGenerator(const TextureManager& textures, const sf::Vector2i& screenSize);
 
 	/**
-	 * \brief Updates the logic of the pipe. Including positions on the screen or
-	 *		  the deletion or generation of the pipe.
+	 * \brief Updates the logic of the pipe generator. 
 	 * \param deltaTime the time that has passed since the game was last updated
-	 *
-	 * Works analogues to the drawThis(), updates all things related to itself
 	 */
 	void updateThis(const sf::Time& deltaTime) override;
 
@@ -100,6 +97,21 @@ private:
 	 */
 	void updateImGuiOffsetBetweenLowerAndUpperPipe();
 
+	/**
+	 * \brief Updates the movement pattern settings of newly created pipes
+	 */
+	void updateImGuiMovePattern();
+
+	/**
+	 * \brief Updates the movement pattern range of newly created pipes
+	 */
+	void updateImGuiMovePatternRange();
+
+	/**
+	 * \brief Updates the movement pattern speed of newly created pipes
+	 */
+	void updateImGuiMovePatternSpeed();
+
 private:
 	const TextureManager& mTextures;
 
@@ -110,7 +122,10 @@ private:
 	int mClippingPoint;
 
 	/**	Distance between bottom and top pipe */
-	float offsetBetweenPipes{40};
+	float mOffsetBetweenPipes{40};
+
+	/** An additional movement of newly created pipes. **/
+	MovePattern mMovePattern;
 
 	/** Produces high quality unsigned integer random numbers */
 	static std::mt19937 engine;
