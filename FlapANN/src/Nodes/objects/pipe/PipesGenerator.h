@@ -3,6 +3,7 @@
 #include <deque>
 #include <memory>
 #include "Pipe.h"
+#include "PipeSet.h"
 
 class PipesGenerator : public NodeScene
 {
@@ -21,7 +22,7 @@ public:
 	 * \param textures Texture manager holds all the available textures in the game.
 	 * \param clippingPoints pipe clipping points (beginning and end of window).
 	 */
-	PipesGenerator(const TextureManager& textures, const sf::Vector2i& screenSize);
+	PipesGenerator(const TextureManager& textures, const FontManager& fonts, const sf::Vector2i& screenSize);
 
 	/**
 	 * \brief Updates the logic of the pipe generator. 
@@ -41,6 +42,14 @@ public:
 	 */
 	void drawThis(sf::RenderTarget& target, sf::RenderStates states) const override;
 
+    /**
+	 * \brief Sorts pipesets by distance from a given point.
+	 * The closer the pipeset is to the first index is.
+	 * \param position Point from which the distance is calculated
+	 * \return An ascending distance-sorted vector of Pipesets
+	 */
+	std::vector<const PipeSet*> sortedNearestPipeSets(const sf::Vector2f& position) const;
+
 private:
 	/**
 	 * \brief Calculates random pipe offset using random number generator. 
@@ -52,7 +61,7 @@ private:
 	 * \brief Retrieves the position of the last pipe added to the deque.
 	 * \return Position (x, y) of the pipe.
 	 */
-	[[nodiscard]] inline sf::Vector2f lastPipePosition() const;
+	[[nodiscard]] inline sf::Vector2f lastPipeSetPosition() const;
 
 
 	/**
@@ -78,19 +87,19 @@ private:
 	 * \brief Updates pipes' position on the screen.
 	 * \param deltaTime the time that has passed since the game was last updated
 	 */
-	void updatePipesPosition(const sf::Time& deltaTime) const;
+	void updatePipesPosition(const sf::Time& deltaTime);
 
 	/**
 	 * \brief Determines if the pipe is outside the window area.
 	 * \return True if the bird is out of sight. False otherwise.
 	 */
-	bool isFrontPipeOutOfSight() const;
+	bool isFrontPipeSetOutOfSight() const;
 
 	/**
 	 * \brief Determines whether a pipe should be generated at a given time.
 	 * \return Tru if the pipe is in window frame. False otherwise.
 	 */
-	bool isLastPipeInsideWindowFrame() const;
+	bool isLastPipeSetInsideWindowFrame() const;
 
 	/**
 	 * \brief Updates the slider that sets the distance value between the upper and bottom pipes.
@@ -114,6 +123,7 @@ private:
 
 private:
 	const TextureManager& mTextures;
+	const FontManager& mFonts;
 
 	PipeOffset xCoordinate{ 60.f, 100.f };
 	PipeOffset yCoordinate{ 30.f, 0.f };
@@ -134,5 +144,5 @@ private:
 	static std::random_device rndDevice;
 
 	/** Hold pipes that are currently being rendered on the screen */
-	std::deque<std::unique_ptr<Pipe>> mPipes;
+	std::deque<PipeSet> mPipeSets;
 };
