@@ -40,8 +40,10 @@ public:
 	 */
 	sf::FloatRect getPipeBounds() const;
 
+	static float pipeSpeed();
+
 private:
 	sf::Sprite mPipe;
 	MovePattern mCurrentMovePattern;
-
+	inline static float mPipeSpeed = 40.f;
 };

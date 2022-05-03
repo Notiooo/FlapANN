@@ -4,6 +4,8 @@
 #include <memory>
 #include "Pipe.h"
 #include "PipeSet.h"
+#include "nodes/objects/bird/Bird.h"
+
 
 class PipesGenerator : public NodeScene
 {
@@ -16,13 +18,14 @@ class PipesGenerator : public NodeScene
 		float maxPipeOffset;
 	};
 
-public:
+public :
 	/**
 	 * \brief The main constructor of the pipe generator.
 	 * \param textures Texture manager holds all the available textures in the game.
-	 * \param clippingPoints pipe clipping points (beginning and end of window).
+	 * \param fonts Font manager holds all the available fonts in the game
+	 * \param screenSize Holds width and height of the game screen
 	 */
-	PipesGenerator(const TextureManager& textures, const FontManager& fonts, const sf::Vector2i& screenSize);
+	PipesGenerator(const TextureManager& textures, const FontManager& fonts, const sf::Vector2u& screenSize);
 
 	/**
 	 * \brief Updates the logic of the pipe generator. 
@@ -42,7 +45,7 @@ public:
 	 */
 	void drawThis(sf::RenderTarget& target, sf::RenderStates states) const override;
 
-    /**
+	/**
 	 * \brief Sorts pipesets by distance from a given point.
 	 * The closer the pipeset is to the first index is.
 	 * \param position Point from which the distance is calculated
@@ -50,6 +53,12 @@ public:
 	 */
 	std::vector<const PipeSet*> sortedNearestPipeSets(const sf::Vector2f& position) const;
 
+	/**
+	 * \brief Checks if the bird and pipes are colliding
+	 * (intersecting with each other)
+	 * \param bird Reference to bird
+	 */
+	void checkCollision(Bird& bird) const;
 private:
 	/**
 	 * \brief Calculates random pipe offset using random number generator. 
@@ -63,15 +72,13 @@ private:
 	 */
 	[[nodiscard]] inline sf::Vector2f lastPipeSetPosition() const;
 
-
 	/**
 	 * \brief Creates another pipe that is offset from the last pipe in the deque by the given offset.
 	 * \param offset Offset from the last pipe in the deque
 	 * \param pipeTextureId Pipe texture id
 	 * \return Newly created pipe
 	 */
-	[[nodiscard]] std::unique_ptr<Pipe> createNextPipeWithOffset(const sf::Vector2f& offset,
-	                                 Textures_ID pipeTextureId = Textures_ID::Pipe_Green) const;
+	[[nodiscard]] std::unique_ptr<Pipe> createNextPipeWithOffset(const sf::Vector2f& offset, Textures_ID pipeTextureId = Textures_ID::Pipe_Green) const;
 
 	/**
 	 * \brief It generates both bottom and upper pipe.
@@ -129,10 +136,10 @@ private:
 	PipeOffset yCoordinate{ 30.f, 0.f };
 
 	/** Used to determine pipe clipping point */
-	int mClippingPoint;
+	float mClippingPoint;
 
 	/**	Distance between bottom and top pipe */
-	float mOffsetBetweenPipes{40};
+	float mOffsetBetweenPipes{55};
 
 	/** An additional movement of newly created pipes. **/
 	MovePattern mMovePattern;

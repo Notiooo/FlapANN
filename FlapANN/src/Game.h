@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "GameManager.h"
 #include "resources/Resources.h"
 
 /**
@@ -57,7 +58,7 @@ private:
 	 */
 	void render();
 
-	
+
 	/**
 	 * \brief Loads the resources needed by the processes inside the game.
 	 *
@@ -82,6 +83,8 @@ private:
 	 * This saves the memory used so as not to load the same font multiple times in multiple places.
 	 */
 	FontManager mFonts;
+
+	std::unique_ptr<GameManager> mGameManager;
 
 	TextureManager mTextures;
 };

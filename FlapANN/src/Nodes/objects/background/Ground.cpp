@@ -5,7 +5,7 @@
 Ground::Ground(const TextureManager& textureManager, const float& scrollSpeed)
 	: NodeScrollable(textureManager.getResourceReference(Textures_ID::Ground), scrollSpeed)
 {
-
+	setOrigin(0, mBackground.getTexture()->getSize().y);
 }
 
 void Ground::loadResources(TextureManager& textureManager)

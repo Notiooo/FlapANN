@@ -5,7 +5,6 @@
 class Bird final : public NodeMoveable
 {
 public:
-
 	/**
 	 * \brief The main constructor of the bird
 	 * \param birdTexture The texture the bird should take
@@ -16,6 +15,11 @@ public:
 	 * \brief Makes the bird "hop/flap" upwards
 	 */
 	void flap();
+
+	/**
+	 * \brief Kills the bird, meaning it can no longer flap.
+	 */
+	void kill();
 
 	/**
 	 * \brief Loads the required resources for this class
@@ -43,6 +47,14 @@ public:
 	 * Works analogues to the drawThis(), updates all things related to itself
 	 */
 	void updateThis(const sf::Time& deltaTime) override;
+
+	/**
+	 * \brief Function that returns the bounds of the bird
+	 * sprite. It is then used in functions that checks
+	 * colision with other objects.
+	 * \return Bounds of the sprite
+	 */
+	sf::FloatRect getBirdBounds() const;
 
 private:
 	/**
@@ -75,5 +87,6 @@ private:
 
 private:
 	float mJumpStrength = 185.f;
+	bool mIsKilled = false;
 	sf::Sprite mBird;
 };

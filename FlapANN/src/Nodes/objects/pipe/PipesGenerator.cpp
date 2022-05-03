@@ -6,9 +6,9 @@
 std::random_device PipesGenerator::rndDevice;
 std::mt19937 PipesGenerator::engine(rndDevice());
 
-PipesGenerator::PipesGenerator(const TextureManager& textures, const FontManager& fonts, const sf::Vector2i& screenSize):
+PipesGenerator::PipesGenerator(const TextureManager& textures, const FontManager& fonts, const sf::Vector2u& screenSize):
 	mTextures(textures),
-    mFonts(fonts),
+	mFonts(fonts),
 	mClippingPoint(screenSize.x)
 {
 	yCoordinate.maxPipeOffset = screenSize.y / 2;
@@ -27,7 +27,7 @@ sf::Vector2f PipesGenerator::randomPipeOffset() const
 
 sf::Vector2f PipesGenerator::lastPipeSetPosition() const
 {
-	return mPipeSets.empty() ? sf::Vector2f{0.f, 0.f} : mPipeSets.back().position();
+	return mPipeSets.empty() ? sf::Vector2f{mClippingPoint, 0.f} : mPipeSets.back().position();
 }
 
 std::unique_ptr<Pipe> PipesGenerator::createNextPipeWithOffset(const sf::Vector2f& offset, Textures_ID pipeTextureId) const
@@ -56,7 +56,7 @@ void PipesGenerator::generatePipe()
 	const sf::Vector2f& offset = randomPipeOffset();
 
 	auto bottomPipe = createNextPipeWithOffset({ offset.x, offset.y + mOffsetBetweenPipes / 2.f });
-	auto upperPipe = createNextPipeWithOffset({ offset.x, offset.y - mOffsetBetweenPipes / 2.f });;
+	auto upperPipe = createNextPipeWithOffset({ offset.x, offset.y - mOffsetBetweenPipes / 2.f });
 	upperPipe->setRotation(180);
 
 	mPipeSets.emplace_back(PipeSet{ mFonts, std::move(bottomPipe), std::move(upperPipe) });
@@ -168,7 +168,7 @@ void PipesGenerator::drawThis(sf::RenderTarget& target, sf::RenderStates states)
 
 std::vector<const PipeSet*> PipesGenerator::sortedNearestPipeSets(const sf::Vector2f& position) const
 {
-    auto calculateHorizontalDistance = [&position](const sf::Vector2f& newPos)
+	auto calculateHorizontalDistance = [&position](const sf::Vector2f& newPos)
 	{
 		return std::sqrtf(std::powf(position.x - newPos.x, 2));
 	};
@@ -186,4 +186,21 @@ std::vector<const PipeSet*> PipesGenerator::sortedNearestPipeSets(const sf::Vect
 	});
 
 	return pipeSetPtrs;
+}
+
+void PipesGenerator::checkCollision(Bird& bird) const
+{
+	for (const auto& pipeSet : mPipeSets)
+	{
+		for (const auto& pipe : {std::ref(pipeSet.bottomPipe()), std::ref(pipeSet.upperPipe())})
+		{
+			if (pipe.get().getPipeBounds().intersects(bird.getBirdBounds()))
+			{
+				bird.kill();
+
+				auto birdVelocity = (bird.velocity().y < 0) ? 0 : bird.velocity().y;
+				bird.setVelocity({-Pipe::pipeSpeed(), birdVelocity});
+			}
+		}
+	}
 }

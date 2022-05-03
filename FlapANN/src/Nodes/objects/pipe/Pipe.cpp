@@ -1,11 +1,12 @@
 #include "pch.h"
 #include "Pipe.h"
+#include <SFML/Graphics/RectangleShape.hpp>
 
 Pipe::Pipe(const sf::Texture& pipeTexture, MovePattern movePattern)
 	: mPipe(pipeTexture)
 	, mCurrentMovePattern(movePattern)
 {
-	setVelocity({-40.f, 0.f});
+	setVelocity({-mPipeSpeed, 0.f});
 }
 
 void Pipe::loadResources(TextureManager& textureManager)
@@ -27,5 +28,10 @@ void Pipe::updateThis(const sf::Time& deltaTime)
 
 sf::FloatRect Pipe::getPipeBounds() const
 {
-	return mPipe.getLocalBounds();
+	return (mPipe.getTransform() * getTransform()).transformRect(mPipe.getGlobalBounds());
+}
+
+float Pipe::pipeSpeed()
+{
+	return mPipeSpeed;
 }

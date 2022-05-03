@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Bird.h"
 
+#include <SFML/Graphics/RectangleShape.hpp>
+
 Bird::Bird(const sf::Texture& birdTexture)
 	: mBird(birdTexture)
 {
@@ -12,12 +14,19 @@ void Bird::flap()
 	setVelocity({ 0.f, -mJumpStrength });
 }
 
+void Bird::kill()
+{
+	mIsKilled = true;
+}
+
 void Bird::handleThisEvents(const sf::Event& event)
 {
-	// Actually it is temporary just to test the bird
-	if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
+	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
 	{
-		flap();
+		if (!mIsKilled)
+		{
+			flap();
+		}
 	}
 }
 
@@ -67,6 +76,21 @@ void Bird::updateThis(const sf::Time& deltaTime)
 	// It falls down slowly
 	accelerate({ 0.f, 500.f * deltaTime.asSeconds() });
 	updateRotation(deltaTime);
+}
+
+sf::FloatRect Bird::getBirdBounds() const
+{
+	auto birdHitboxSize = sf::Vector2f{
+		mBird.getTexture()->getSize().x / 1.5f,
+		mBird.getTexture()->getSize().y / 1.5f
+	};
+	auto birdTextureSizeDifference = sf::Vector2f{
+		mBird.getTexture()->getSize().x - birdHitboxSize.x,
+		mBird.getTexture()->getSize().y - birdHitboxSize.y
+	};
+	auto rectLeft = getPosition().x - mBird.getLocalBounds().width / 2.f + birdTextureSizeDifference.x;
+	auto rectTop = getPosition().y - mBird.getLocalBounds().width / 2.f + birdTextureSizeDifference.y;
+	return {rectLeft, rectTop, birdHitboxSize.x, birdHitboxSize.y};
 }
 
 void Bird::loadResources(TextureManager& textureManager)

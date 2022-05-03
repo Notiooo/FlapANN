@@ -24,11 +24,12 @@ Game::Game():
 	mGameWindow.setKeyRepeatEnabled(false);
 
 	// Makes window bigger
-	mGameWindow.setSize({ (GAME_WIDTH + IMGUI_SIDEMENU_WIDTH) * SCREEN_SCALE, GAME_HEIGHT * SCREEN_SCALE });
+	mGameWindow.setSize({(GAME_WIDTH + IMGUI_SIDEMENU_WIDTH) * SCREEN_SCALE, GAME_HEIGHT * SCREEN_SCALE });
 
 	// load resources
 	loadResources();
 
+	mGameManager = std::make_unique<GameManager>(mTextures, sf::Vector2u{GAME_WIDTH, GAME_HEIGHT}, mFonts);
 	ImGui::SFML::Init(mGameWindow);
 }
 
@@ -72,14 +73,15 @@ void Game::processEvents()
 		// Ignore all events that are related directly with ImGui
 		if (ImGui::IsWindowHovered(ImGuiFocusedFlags_AnyWindow) || ImGui::IsAnyItemActive())
 			return;
-		
+
 		// process event there
+		mGameManager->handleEvents(event);
 	}
 }
 
 void Game::update(const sf::Time& deltaTime)
 {
-	// update game there
+	mGameManager->update(deltaTime);
 }
 
 void Game::updateImGui()
@@ -101,8 +103,7 @@ void Game::render()
 	// the previous frame
 	mGameWindow.clear();
 
-	// display the game there
-	// ...
+	mGameWindow.draw(*mGameManager);
 
 	mGameWindow.pushGLStates();
 	ImGui::SFML::Render(mGameWindow);
