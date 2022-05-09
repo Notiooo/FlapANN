@@ -71,13 +71,14 @@ void GameManager::updateANN()
     for(auto& currentBird : mBirds)
     {
         auto& currentGenome = mGeneticAlgorithm.at(iterator);
-        const auto& nearestPipe = mPipesGenerator.sortedNearestPipeSets(currentBird.getPosition());
-        const auto& horizontalDistance = std::clamp(normalize(0, mScreenSize.x, 
-                                                   std::abs(currentBird.getPosition().x - nearestPipe.front()->position().x)
-        ), 0.f, 1.f);
-        const auto& verticalDistance = std::clamp(normalize(0, mScreenSize.y, 
-                                                 std::abs(currentBird.getPosition().y - nearestPipe.front()->position().y)
-        ), 0.f, 1.f);
+        const auto& nearestPipe = mPipesGenerator.sortedNearestPipeSetsInFront(currentBird.getPosition());
+		auto xDelta = currentBird.getPosition().x - nearestPipe.front()->position().x;
+		auto horizontalDistance = std::clamp(normalize(0, mScreenSize.x,std::abs(xDelta)), 0.f, 1.f);
+		horizontalDistance = (xDelta < 0) ? horizontalDistance : -horizontalDistance;
+
+		auto yDelta = currentBird.getPosition().y - nearestPipe.front()->position().y;
+		auto verticalDistance = std::clamp(normalize(0, mScreenSize.y, std::abs(yDelta)), 0.f, 1.f);
+		verticalDistance = (yDelta < 0) ? verticalDistance : -verticalDistance;
 
         const auto& birdPositionY = std::clamp(normalize(0, mScreenSize.y, 
                                                  std::abs(currentBird.getPosition().y)
@@ -135,24 +136,29 @@ void GameManager::updateImGui()
 	{
 		static std::vector<float> vertical;
 		static std::vector<float> horizontal;
-		auto& firstBird = mBirds.front();
-		const auto& nearestPipe = mPipesGenerator.sortedNearestPipeSets(firstBird.getPosition());
-		if (!nearestPipe.empty())
+		auto& firstBird = std::find_if(mBirds.begin(), mBirds.end(), [](const Bird& bird) { return !bird.isDead(); });
+		if (firstBird != mBirds.end())
 		{
-			const auto& horizontalDistance = std::clamp(normalize(0, mScreenSize.x,
-				std::abs(firstBird.getPosition().x - nearestPipe.front()->position().x)
-			), 0.f, 1.f);
-			const auto& verticalDistance = std::clamp(normalize(0, mScreenSize.y,
-				std::abs(firstBird.getPosition().y - nearestPipe.front()->position().y)
-			), 0.f, 1.f);
-			vertical.push_back(verticalDistance);
-			horizontal.push_back(horizontalDistance);
-			char overlayHor[32];
-            sprintf(overlayHor, "hor: %f", horizontalDistance);
-			char overlayVer[32];
-            sprintf(overlayVer, "ver: %f", verticalDistance);
-			ImGui::PlotLines("Horizontal", horizontal.data(), horizontal.size(), 0, overlayHor);
-			ImGui::PlotLines("Vertical", vertical.data(), vertical.size(), 0, overlayVer);
+			const auto& nearestPipe = mPipesGenerator.sortedNearestPipeSetsInFront(firstBird->getPosition());
+			if (!nearestPipe.empty())
+			{
+				auto xDelta = firstBird->getPosition().x - nearestPipe.front()->position().x;
+			    auto horizontalDistance = std::clamp(normalize(0, mScreenSize.x,std::abs(xDelta)), 0.f, 1.f);
+				horizontalDistance = (xDelta < 0) ? horizontalDistance : -horizontalDistance;
+
+				auto yDelta = firstBird->getPosition().y - nearestPipe.front()->position().y;
+			    auto verticalDistance = std::clamp(normalize(0, mScreenSize.y, std::abs(yDelta)), 0.f, 1.f);
+				verticalDistance = (yDelta < 0) ? verticalDistance : -verticalDistance;
+
+				vertical.push_back(verticalDistance);
+				horizontal.push_back(horizontalDistance);
+				char overlayHor[32];
+				sprintf(overlayHor, "hor: %f", horizontalDistance);
+				char overlayVer[32];
+				sprintf(overlayVer, "ver: %f", verticalDistance);
+				ImGui::PlotLines("Horizontal", horizontal.data(), horizontal.size(), 0, overlayHor);
+				ImGui::PlotLines("Vertical", vertical.data(), vertical.size(), 0, overlayVer);
+			}
 		}
 	}
 }

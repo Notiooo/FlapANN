@@ -131,7 +131,12 @@ void GeneticAlgorithm::evolve()
         offspring->mutate();
         sortedPopulation[i] = *offspring.release();
     }
-    mPopulation = sortByIndex(sortedPopulation);
+    mPopulation = sortedPopulation;
+    int iterator = 0;
+    for(auto& unit : mPopulation)
+    {
+        unit.index = iterator++;
+    }
     ++mCurrentGeneration;
 }
 

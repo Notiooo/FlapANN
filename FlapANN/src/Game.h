@@ -69,6 +69,7 @@ private:
 	void loadResources();
 
 	static const sf::Time TIME_PER_FRAME; //!< The time it takes for one game frame to be generated.
+	static float TIME_SPEED_SCALAR;
 
 	static const int GAME_WIDTH; //!< Default game window width
 	static const int GAME_HEIGHT; //!< Default game window height

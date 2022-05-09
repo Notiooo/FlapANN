@@ -55,6 +55,8 @@ public :
 	 */
 	std::vector<const PipeSet*> sortedNearestPipeSets(const sf::Vector2f& position) const;
 
+	std::vector<const PipeSet*> sortedNearestPipeSetsInFront(const sf::Vector2f& position) const;
+
 	/**
 	 * \brief Checks if the bird and pipes are colliding
 	 * (intersecting with each other)
@@ -137,7 +139,7 @@ private:
 	const TextureManager& mTextures;
 	const FontManager& mFonts;
 
-	PipeOffset xCoordinate{ 60.f, 100.f };
+	PipeOffset xCoordinate{ 85.f, 110.f };
 	PipeOffset yCoordinate{ 30.f, 0.f };
 
 	/** Used to determine pipe clipping point */

@@ -29,8 +29,11 @@ public:
 
         Unit(const Unit& rhs)
             : ann(fann_copy(rhs.ann)), index(rhs.index), fitness(rhs.fitness) {}
-        Unit(Unit&& rhs)
-            : ann(fann_copy(rhs.ann)), index(rhs.index), fitness(rhs.fitness) {}
+        Unit(Unit&& rhs) noexcept
+            : ann(rhs.ann), index(rhs.index), fitness(rhs.fitness)
+        {
+            rhs.ann = nullptr;
+        }
 
         Unit& operator=(const Unit& rhs)
         {
@@ -41,6 +44,16 @@ public:
                 fitness = rhs.fitness;
                 mMutateRate = rhs.mMutateRate;
             }
+            return *this;
+        }
+
+        Unit& operator=(Unit&& rhs) noexcept
+        {
+            ann = rhs.ann;
+            index = rhs.index;
+            fitness = rhs.fitness;
+            mMutateRate = rhs.mMutateRate;
+            rhs.ann = nullptr;
             return *this;
         }
 

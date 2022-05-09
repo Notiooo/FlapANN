@@ -23,7 +23,7 @@ void Pipe::updateThis(const sf::Time& deltaTime)
 {
 	NodeMoveable::updateThis(deltaTime);
 
-	setPosition(getPosition() + mCurrentMovePattern.positionDelta(deltaTime));
+	setPosition(getPosition() + mCurrentMovePattern.positionDelta(deltaTime) * deltaTime.asSeconds() * 100.f);
 }
 
 sf::FloatRect Pipe::getPipeBounds() const

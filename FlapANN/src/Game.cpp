@@ -14,6 +14,7 @@ const int Game::GAME_WIDTH = 144;
 const int Game::GAME_HEIGHT = 256;
 const int Game::SCREEN_SCALE = 3;
 const int Game::IMGUI_SIDEMENU_WIDTH = GAME_WIDTH;
+float Game::TIME_SPEED_SCALAR = 1.f;
 
 
 Game::Game():
@@ -44,13 +45,27 @@ void Game::run()
 	auto frameTimeElapsed = sf::Time::Zero;
 	while (mGameWindow.isOpen())
 	{
-		frameTimeElapsed += clock.restart();
+		if (TIME_SPEED_SCALAR >= 1.f)
+		{
+			frameTimeElapsed += clock.restart() * TIME_SPEED_SCALAR;
+		}
+		else
+		{
+			frameTimeElapsed += clock.restart();
+		}
 		while (frameTimeElapsed > TIME_PER_FRAME)
 		{
 			// Update world no more than 60 frames per seconds
 			frameTimeElapsed -= TIME_PER_FRAME;
 			processEvents();
-			update(TIME_PER_FRAME);
+			if (TIME_SPEED_SCALAR >= 1.f)
+			{
+				update(TIME_PER_FRAME);
+			}
+			else
+			{
+			    update(TIME_PER_FRAME * TIME_SPEED_SCALAR);
+			}
 		}
 		ImGui::SFML::Update(mGameWindow, frameTimeElapsed);
 		updateImGui();
@@ -93,7 +108,12 @@ void Game::updateImGui()
 		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | 
 		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 	ImGui::Text("Game settings:");
-	mGameManager->updateImGui();
+    const static auto& sliderText = "Speed of the game";
+	const static auto& textSize = ImGui::CalcTextSize(sliderText);
+
+	ImGui::PushItemWidth(-textSize.x);
+	ImGui::SliderFloat(sliderText, &TIME_SPEED_SCALAR, 0.f, 5.f);
+    mGameManager->updateImGui();
 	ImGui::End();
 	ImGui::PopStyleColor();
 }
