@@ -20,14 +20,29 @@ public:
         int index;
         float fitness;
 
+        ~Unit();
+
         Unit()
             : ann(nullptr), index(0), fitness(0) {}
         Unit(fann* ann, int index, int fitness)
             : ann(ann), index(index), fitness(fitness) {}
 
-        Unit(const Unit& rhs) = default;
-        Unit(Unit&& rhs) = default;
-        Unit& operator=(const Unit& rhs) = default;
+        Unit(const Unit& rhs)
+            : ann(fann_copy(rhs.ann)), index(rhs.index), fitness(rhs.fitness) {}
+        Unit(Unit&& rhs)
+            : ann(fann_copy(rhs.ann)), index(rhs.index), fitness(rhs.fitness) {}
+
+        Unit& operator=(const Unit& rhs)
+        {
+            if (this != &rhs)
+            {
+                ann = fann_copy(rhs.ann);
+                index = rhs.index;
+                fitness = rhs.fitness;
+                mMutateRate = rhs.mMutateRate;
+            }
+            return *this;
+        }
 
         void performOnPredictedOutput(std::vector<fann_type> input, std::function<void(fann_type*)> perform) const;
         void mutate();

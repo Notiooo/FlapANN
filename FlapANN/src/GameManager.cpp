@@ -24,7 +24,7 @@ GameManager::GameManager(const TextureManager& textureManager, sf::Vector2u scre
 	mPipesGenerator(textureManager, fonts, screenSize),
     mTextureManager(textureManager),
     mScreenSize(screenSize),
-    mGeneticAlgorithm(20, 15, {2, {8}, 1})
+    mGeneticAlgorithm(150, 5, {3, {8}, 1})
 {
 	mGround.setPosition(0, static_cast<float>(screenSize.y));
 	restartGame();
@@ -43,7 +43,8 @@ void GameManager::controlTopScreenBoundaries(Bird& currentBird)
 {
     if (currentBird.getPosition().y < 0)
     {
-        currentBird.setPosition(currentBird.getPosition().x, 0);
+		currentBird.kill();
+        //currentBird.setPosition(currentBird.getPosition().x, 0);
     }
 }
 
@@ -77,8 +78,12 @@ void GameManager::updateANN()
         const auto& verticalDistance = std::clamp(normalize(0, mScreenSize.y, 
                                                  std::abs(currentBird.getPosition().y - nearestPipe.front()->position().y)
         ), 0.f, 1.f);
-		currentGenome.fitness = currentBird.birdScore; //- std::sqrtf(std::powf(horizontalDistance, 2) + std::powf(verticalDistance, 2)) / 100.f;
-        currentGenome.performOnPredictedOutput({ horizontalDistance, verticalDistance }, [&currentBird](fann_type* output)
+
+        const auto& birdPositionY = std::clamp(normalize(0, mScreenSize.y, 
+                                                 std::abs(currentBird.getPosition().y)
+        ), 0.f, 1.f);
+        currentGenome.fitness = currentBird.birdScore - std::sqrtf(std::powf(horizontalDistance, 2) + std::powf(verticalDistance, 2)) / 10.f;
+        currentGenome.performOnPredictedOutput({ horizontalDistance, verticalDistance, birdPositionY }, [&currentBird](fann_type* output)
         {
             if(output[0] > 0.5f)
             {
@@ -197,5 +202,5 @@ void GameManager::restartGame()
 {
 	mBirds.clear();
 	mPipesGenerator.restart();
-	addBirds(mTextureManager, mScreenSize, 20);
+	addBirds(mTextureManager, mScreenSize, 150);
 }

@@ -34,7 +34,7 @@ void Bird::handleThisEvents(const sf::Event& event)
 		if (!mIsKilled)
 		{
 			flap();
-			birdScore -= 0.5f;
+			//birdScore -= 0.5f;
 		}
 	}
 }

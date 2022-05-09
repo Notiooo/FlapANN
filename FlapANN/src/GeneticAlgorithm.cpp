@@ -6,6 +6,11 @@ GeneticAlgorithm::~GeneticAlgorithm()
     clearPopulation();
 }
 
+GeneticAlgorithm::Unit::~Unit()
+{
+    fann_destroy(ann);
+}
+
 void GeneticAlgorithm::Unit::performOnPredictedOutput(std::vector<fann_type> input, std::function<void(fann_type*)> perform) const
 {
     perform(fann_run(ann, input.data()));
@@ -19,7 +24,7 @@ void GeneticAlgorithm::Unit::mutate()
     }
     for (int i = 0; i < ann->total_connections; ++i)
     {
-        //ann->connections[i]->activation_steepness = mutateGene(ann->connections[i]->activation_steepness);
+        ann->connections[i]->activation_steepness = mutateGene(ann->connections[i]->activation_steepness);
     }
 }
 
@@ -27,12 +32,12 @@ float GeneticAlgorithm::Unit::mutateGene(float gene)
 {
     auto randomBetweenZeroAndOne = []()
     {
-        return (static_cast<double>(std::rand()) / (RAND_MAX));
+        return (static_cast<float>(std::rand()) / (RAND_MAX));
     };
     auto random = randomBetweenZeroAndOne();
     if(random < mMutateRate)
     {
-        int mutateFactor = 1 + ((randomBetweenZeroAndOne() - 0.5f) * 3 + (randomBetweenZeroAndOne() - 0.5f));
+        const auto mutateFactor = 1.f + ((randomBetweenZeroAndOne() - 0.5f) * 3.f + (randomBetweenZeroAndOne() - 0.5f));
         gene *= mutateFactor;
     }
     return gene;
@@ -50,12 +55,12 @@ GeneticAlgorithm::GeneticAlgorithm(int population, int topEvolvingUnits, Network
 
 bool GeneticAlgorithm::bestUnitFailed()
 {
-    return bestUnits().at(0).fitness < 0;
+    return bestUnits().at(0).fitness < 0.f;
 }
 
 std::vector<GeneticAlgorithm::Unit> GeneticAlgorithm::sortByIndex(std::vector<Unit> population) const
 {
-    std::sort(population.begin(), population.end(), [](Unit a, Unit b)
+    std::sort(population.begin(), population.end(), [](const Unit& a, const Unit& b)
     {
         return a.index < b.index;
     });
@@ -65,10 +70,6 @@ std::vector<GeneticAlgorithm::Unit> GeneticAlgorithm::sortByIndex(std::vector<Un
 
 void GeneticAlgorithm::clearPopulation()
 {
-    for(auto& unit : mPopulation)
-    {
-        fann_destroy(unit.ann);
-    }
     mPopulation.clear();
 }
 
@@ -129,16 +130,16 @@ void GeneticAlgorithm::evolve()
         }
         offspring->mutate();
         sortedPopulation[i] = *offspring.release();
-        mPopulation = sortByIndex(sortedPopulation);
     }
+    mPopulation = sortByIndex(sortedPopulation);
     ++mCurrentGeneration;
 }
 
 std::vector<GeneticAlgorithm::Unit> GeneticAlgorithm::sortByFitness(std::vector<GeneticAlgorithm::Unit> population)
 {
-    std::sort(population.begin(), population.end(), [](Unit a, Unit b)
+    std::sort(population.begin(), population.end(), [](const Unit& a, const Unit& b)
     {
-        return a.fitness < b.fitness;
+        return a.fitness > b.fitness;
     });
 
     return population;
@@ -166,7 +167,7 @@ void GeneticAlgorithm::createPopulation()
     }
     for(auto& unit : mPopulation)
     {
-        fann_randomize_weights(unit.ann, -0.1f, 0.1f);
+        fann_randomize_weights(unit.ann, -1.f, 1.f);
     }
 }
 
