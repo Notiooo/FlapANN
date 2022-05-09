@@ -20,8 +20,9 @@ public:
 	 * \brief Kills the bird, meaning it can no longer flap.
 	 */
 	void kill();
+    bool isDead() const;
 
-	/**
+    /**
 	 * \brief Loads the required resources for this class
 	 * \param textureManager Texture storage manager
 	 */
@@ -62,13 +63,13 @@ private:
 	 * \param fallingThreshold Offsetting to allow for fall reporting later.
 	 * \return True if the bird falls. False otherwise.
 	 */
-	bool isBirdFalling(const float& fallingThreshold);
+	bool isBirdFalling(const float& fallingThreshold) const;
 
 	/**
 	 * \brief Determines if the bird is rising (flapping) at this point.
 	 * \return True if the bird is raising. False otherwise.
 	 */
-	bool isBirdRaising();
+	bool isBirdRaising() const;
 
 
 	/**
@@ -76,7 +77,7 @@ private:
 	 * \param fallingThreshold Offsetting to allow for fall reporting later.
 	 * \return Rotation in degrees that the bird should make
 	 */
-	float calculateRotationChange(const float& fallingThreshold);
+	float calculateRotationChange(const float& fallingThreshold) const;
 
 
 	/**
@@ -85,6 +86,8 @@ private:
 	 */
 	void updateRotation(const sf::Time& deltaTime);
 
+public:
+	float birdScore = 0;
 private:
 	float mJumpStrength = 185.f;
 	bool mIsKilled = false;

@@ -11,12 +11,20 @@ Bird::Bird(const sf::Texture& birdTexture)
 
 void Bird::flap()
 {
-	setVelocity({ 0.f, -mJumpStrength });
+	if (!mIsKilled)
+	{
+		setVelocity({ 0.f, -mJumpStrength });
+	}
 }
 
 void Bird::kill()
 {
 	mIsKilled = true;
+}
+
+bool Bird::isDead() const
+{
+	return mIsKilled;
 }
 
 void Bird::handleThisEvents(const sf::Event& event)
@@ -35,19 +43,19 @@ void Bird::drawThis(sf::RenderTarget& target, sf::RenderStates states) const
 	target.draw(mBird, states);
 }
 
-bool Bird::isBirdFalling(const float& fallingThreshold)
+bool Bird::isBirdFalling(const float& fallingThreshold) const
 {
 	const auto& currentRotation = getRotation();
 	return velocity().y - fallingThreshold > 0 && (currentRotation < 45 || currentRotation > (365 - 60));
 }
 
-bool Bird::isBirdRaising()
+bool Bird::isBirdRaising() const
 {
 	const auto& currentRotation = getRotation();
 	return velocity().y < 0 && (currentRotation > (365 - 45) || currentRotation < 60);
 }
 
-float Bird::calculateRotationChange(const float& fallingThreshold)
+float Bird::calculateRotationChange(const float& fallingThreshold) const
 {
 	static const auto& rotationSpeed = 300.f;
 
@@ -76,6 +84,10 @@ void Bird::updateThis(const sf::Time& deltaTime)
 	// It falls down slowly
 	accelerate({ 0.f, 500.f * deltaTime.asSeconds() });
 	updateRotation(deltaTime);
+	if(!mIsKilled)
+	{
+		birdScore += deltaTime.asSeconds();
+	}
 }
 
 sf::FloatRect Bird::getBirdBounds() const

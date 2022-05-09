@@ -1,8 +1,20 @@
 #pragma once
+#include "GeneticAlgorithm.h"
 #include "nodes/objects/background/Background.h"
 #include "nodes/objects/background/Ground.h"
 #include "nodes/objects/bird/Bird.h"
 #include "nodes/objects/pipe/PipesGenerator.h"
+#include "EvolutionNet/EvolutionNet.hpp"
+
+
+struct FlapAnnDataSet
+{
+	fann_type verticalDistance;
+	//fann_type nextPipeOffset;
+	fann_type horizontalDistance;
+	Bird* birb;
+};
+
 
 class GameManager : public sf::Drawable
 {
@@ -15,7 +27,7 @@ public:
 	 */
 	GameManager(const TextureManager& textureManager, sf::Vector2u screenSize, const FontManager& fonts);
 
-	/**
+    /**
 	 * \brief Updates game logic
 	 * \param deltaTime the time that has passed since the game was last updated.
 	 *
@@ -48,7 +60,6 @@ public:
 	 */
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
-
 	/**
 	 * \brief Add a predefined number of birds to the game.
 	 * \param textureManager textureManager Texture manager holds all the available textures in the game.
@@ -59,6 +70,18 @@ public:
 	              const unsigned& numberOfBirds = 5);
 
 private:
+	void restartGame();
+	bool allBirdsDead();
+    void controlTopScreenBoundaries(Bird& currentBird);
+    void controlBottomScreenBoundaries(Bird& currentBird);
+    void controlGameBoundaries(Bird& currentBird);
+    void updateANN();
+    void updateBirds(const sf::Time& deltaTime);
+
+private:
+	const TextureManager& mTextureManager;
+	sf::Vector2u mScreenSize;
+
 	/** Scrollable background */
 	Background mBackground;
 
@@ -73,4 +96,7 @@ private:
 
 	/** Array containing all types of bird textures */
 	std::array<Textures_ID, 3> mBirdTextures{Textures_ID::Bird_Blue, Textures_ID::Bird_Orange, Textures_ID::Bird_Red};
+
+	// Testing bro
+	GeneticAlgorithm mGeneticAlgorithm;
 };

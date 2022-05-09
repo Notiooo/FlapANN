@@ -61,7 +61,8 @@ project "FlapANN"
         {
             "%{wks.name}/vendor/lib/imgui/windows",
             "%{wks.name}/vendor/lib/imgui-sfml/windows",
-            "%{wks.name}/vendor/lib/SFML/windows"
+            "%{wks.name}/vendor/lib/SFML/windows",
+            "%{wks.name}/vendor/lib/fann/windows"
         }
 
         links
@@ -76,7 +77,13 @@ project "FlapANN"
             "vorbisenc",
             "vorbisfile",
             "vorbis",
-            "ogg"
+            "ogg",
+
+            -- Fann
+            --"doublefann",
+            "fann"
+            --"fixedfann",
+            --"floatfann"
         }
 
         postbuildcommands

@@ -93,6 +93,7 @@ void Game::updateImGui()
 		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | 
 		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 	ImGui::Text("Game settings:");
+	mGameManager->updateImGui();
 	ImGui::End();
 	ImGui::PopStyleColor();
 }

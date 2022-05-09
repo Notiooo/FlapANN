@@ -35,3 +35,13 @@ float Pipe::pipeSpeed()
 {
 	return mPipeSpeed;
 }
+
+void Pipe::makeRed()
+{
+	mPipe.setColor(sf::Color::Red);
+}
+
+void Pipe::makeNormal()
+{
+	mPipe.setColor(sf::Color::White);
+}

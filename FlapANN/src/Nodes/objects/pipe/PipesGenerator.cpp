@@ -88,6 +88,11 @@ void PipesGenerator::updateThis(const sf::Time& deltaTime)
 	updatePipesPosition(deltaTime);
 }
 
+int PipesGenerator::numberOfPipes() const
+{
+	return mPipeSets.size();
+}
+
 void PipesGenerator::updateImGuiOffsetBetweenLowerAndUpperPipe()
 {
 	const static auto& sliderText = "Offset between upper and lower pipe";
@@ -203,4 +208,9 @@ void PipesGenerator::checkCollision(Bird& bird) const
 			}
 		}
 	}
+}
+
+void PipesGenerator::restart()
+{
+	mPipeSets.clear();
 }

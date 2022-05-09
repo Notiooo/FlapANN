@@ -33,6 +33,8 @@ public :
 	 */
 	void updateThis(const sf::Time& deltaTime) override;
 
+	int numberOfPipes() const;
+
 	/**
 	 * \brief Updates sliders and options related to PipesGenerator
 	 */
@@ -59,6 +61,9 @@ public :
 	 * \param bird Reference to bird
 	 */
 	void checkCollision(Bird& bird) const;
+
+	void restart();
+
 private:
 	/**
 	 * \brief Calculates random pipe offset using random number generator. 

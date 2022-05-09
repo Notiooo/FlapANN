@@ -78,4 +78,5 @@ private:
 	std::unique_ptr<Pipe> mBottomPipe;
 	std::unique_ptr<Pipe> mUpperPipe;
 	sf::Text mOffsetBetweenPipesText;
+	mutable bool mMakeRed = false;
 };

@@ -42,6 +42,9 @@ public:
 
 	static float pipeSpeed();
 
+	void makeRed();
+	void makeNormal();
+
 private:
 	sf::Sprite mPipe;
 	MovePattern mCurrentMovePattern;
