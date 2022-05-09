@@ -13,13 +13,13 @@ void GeneticAlgorithm::Unit::performOnPredictedOutput(std::vector<fann_type> inp
 
 void GeneticAlgorithm::Unit::mutate()
 {
-    for(int i = 0; i < ann->total_neurons; ++i)
+    for(int i = 0; i < ann->total_connections; ++i)
     {
         ann->weights[i] = mutateGene(ann->weights[i]);
     }
     for (int i = 0; i < ann->total_connections; ++i)
     {
-        ann->connections[i]->activation_steepness = mutateGene(ann->connections[i]->activation_steepness);
+        //ann->connections[i]->activation_steepness = mutateGene(ann->connections[i]->activation_steepness);
     }
 }
 
@@ -161,9 +161,12 @@ void GeneticAlgorithm::createPopulation()
     for (int i = 0; i < maxUnits(); ++i)
     {
         auto ann = fann_create_standard_array(mLayers.size(), mLayers.data());
-        fann_randomize_weights(ann, -1.f, 1.f);
         Unit unit = {ann, i, 0};
         mPopulation.push_back(unit);
+    }
+    for(auto& unit : mPopulation)
+    {
+        fann_randomize_weights(unit.ann, -0.1f, 0.1f);
     }
 }
 
@@ -186,15 +189,15 @@ std::unique_ptr<GeneticAlgorithm::Unit> GeneticAlgorithm::crossover(const Unit& 
 {
     static std::random_device rd; 
     static std::mt19937 gen(rd());
-    const std::uniform_int_distribution<> distr(0, parentA.ann->total_neurons-1);
+    const std::uniform_int_distribution<> distr(0, parentA.ann->total_connections-1);
     const std::bernoulli_distribution trueOrFalse;
 
     auto cutPoint = distr(gen);
     for (int i = cutPoint; i < parentA.ann->total_connections; ++i)
     {
-        auto biasFromA = parentA.ann->connections[i]->activation_steepness;
-        parentA.ann->connections[i]->activation_steepness = parentB.ann->connections[i]->activation_steepness;
-        parentB.ann->connections[i]->activation_steepness = biasFromA;
+        auto biasFromA = parentA.ann->weights[i];
+        parentA.ann->weights[i] = parentB.ann->weights[i];
+        parentB.ann->weights[i] = biasFromA;
     }
 
     return (trueOrFalse(gen) ? std::make_unique<Unit>(parentA) : std::make_unique<Unit>(parentB));

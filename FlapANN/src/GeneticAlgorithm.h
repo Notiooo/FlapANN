@@ -18,7 +18,7 @@ public:
     {
         fann* ann;
         int index;
-        int fitness;
+        float fitness;
 
         Unit()
             : ann(nullptr), index(0), fitness(0) {}
