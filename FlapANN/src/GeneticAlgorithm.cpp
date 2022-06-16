@@ -53,7 +53,7 @@ GeneticAlgorithm::GeneticAlgorithm(int population, int topEvolvingUnits, Network
     mLayers.push_back(settings.mOutputNeurons);
 }
 
-bool GeneticAlgorithm::bestUnitFailed()
+bool GeneticAlgorithm::doesBestUnitFailed()
 {
     return bestUnits().at(0).fitness < 0.f;
 }
@@ -75,72 +75,86 @@ void GeneticAlgorithm::clearPopulation()
 
 void GeneticAlgorithm::checkBestUnitCorrectness()
 {
-    if(bestUnitFailed())
+    if(doesBestUnitFailed())
     {
         clearPopulation();
         createPopulation();
     }
 }
 
-std::unique_ptr<GeneticAlgorithm::Unit> GeneticAlgorithm::performCrossover(CrossoverStage crossoverStage)
+std::unique_ptr<GeneticAlgorithm::Unit> GeneticAlgorithm::crossoverTwoRandomBestUnits()
 {
-    auto bestUnits = this->bestUnits();
+	auto& bestUnits = this->bestUnits();
+	std::vector<Unit> randomBests;
+	std::sample(bestUnits.begin(), bestUnits.end(), std::back_inserter(randomBests), 2,
+	            std::mt19937(std::random_device()()));
+	return crossover(randomBests.at(0), randomBests.at(1));
+}
 
-    switch (crossoverStage)
-    {
-        case PickTopTwoBests:
-        {
-            return crossover(bestUnits.at(0), bestUnits.at(1));
-        }
+std::unique_ptr<GeneticAlgorithm::Unit> GeneticAlgorithm::crossoverTwoRandomUnits()
+{
+	auto population = this->population();
+	return std::make_unique<Unit>(*(population.begin() + (std::rand() % population.size())));
+}
 
-        case PickRandomBests:
-        {
-            std::vector<Unit> randomBests;
-            std::sample(bestUnits.begin(), bestUnits.end(), std::back_inserter(randomBests), 2,
-                std::mt19937(std::random_device()()));
-            return crossover(randomBests.at(0), randomBests.at(1));
-        }
+std::unique_ptr<GeneticAlgorithm::Unit> GeneticAlgorithm::crossoverTwoBestUnits()
+{
+	auto bestUnits = this->bestUnits();
+	return crossover(bestUnits.at(0), bestUnits.at(1));
+}
 
-        case PickRandomly:
-        {
-            return std::make_unique<Unit>(*(bestUnits.begin() + (std::rand() % bestUnits.size())));
-        }
-    }
+void GeneticAlgorithm::reassignPopulation(std::vector<GeneticAlgorithm::Unit> sortedPopulation)
+{
+	mPopulation = sortedPopulation;
+	int iterator = 0;
+	for(auto& unit : mPopulation)
+	{
+		unit.index = iterator++;
+	}
+}
+
+std::vector<GeneticAlgorithm::Unit> GeneticAlgorithm::replaceWeakBirdsWithCrossovers(std::vector<GeneticAlgorithm::Unit>&& sortedPopulationByFitness)
+{
+	const auto firstWeakUnitIndex = mTopUnits;
+	const auto& populationSizeWithoutTopUnits = mPopulation.size() - mTopUnits;
+
+	for(int i = 0; i < populationSizeWithoutTopUnits; ++i)
+	{
+		auto offspring = std::unique_ptr<Unit>();
+
+		if(i == 0)
+		{
+			offspring = crossoverTwoBestUnits();
+		}
+		else if (i < populationSizeWithoutTopUnits - 2)
+		{
+			offspring = crossoverTwoRandomBestUnits();
+		}
+		else
+		{
+			offspring = crossoverTwoRandomUnits();
+		}
+
+		offspring->mutate();
+		sortedPopulationByFitness[firstWeakUnitIndex + i] = *offspring.release();
+	}
+    return sortedPopulationByFitness;
+}
+
+void GeneticAlgorithm::evolveOtherThanBestUnits()
+{
+	reassignPopulation(replaceWeakBirdsWithCrossovers(sortByFitness(mPopulation)));
+	++mCurrentGeneration;
 }
 
 void GeneticAlgorithm::evolve()
 {
     checkBestUnitCorrectness();
 
-    auto sortedPopulation = this->sortByFitness(mPopulation);
-    for(int i = mTopUnits; i < mPopulation.size(); ++i)
-    {
-        std::unique_ptr<Unit> offspring;
-        if(i == mTopUnits)
-        {
-            offspring = performCrossover(PickTopTwoBests);
-        }
-        else if(i < mPopulation.size() - 2)
-        {
-            offspring = performCrossover(PickRandomBests);
-        }
-        else
-        {
-            offspring = performCrossover(PickRandomly);
-        }
-        offspring->mutate();
-        sortedPopulation[i] = *offspring.release();
-    }
-    mPopulation = sortedPopulation;
-    int iterator = 0;
-    for(auto& unit : mPopulation)
-    {
-        unit.index = iterator++;
-    }
-    ++mCurrentGeneration;
+    evolveOtherThanBestUnits();
 }
 
-std::vector<GeneticAlgorithm::Unit> GeneticAlgorithm::sortByFitness(std::vector<GeneticAlgorithm::Unit> population)
+std::vector<GeneticAlgorithm::Unit> GeneticAlgorithm::sortByFitness(std::vector<GeneticAlgorithm::Unit> population) const
 {
     std::sort(population.begin(), population.end(), [](const Unit& a, const Unit& b)
     {
@@ -176,7 +190,7 @@ void GeneticAlgorithm::createPopulation()
     }
 }
 
-int GeneticAlgorithm::currentGeneration()
+int GeneticAlgorithm::currentGeneration() const
 {
     return mCurrentGeneration;
 }
@@ -191,7 +205,7 @@ GeneticAlgorithm::Unit& GeneticAlgorithm::at(int index)
     return mPopulation.at(index);
 }
 
-std::unique_ptr<GeneticAlgorithm::Unit> GeneticAlgorithm::crossover(const Unit& parentA, const Unit& parentB)
+std::unique_ptr<GeneticAlgorithm::Unit> GeneticAlgorithm::crossover(const Unit& parentA, const Unit& parentB) const
 {
     static std::random_device rd; 
     static std::mt19937 gen(rd());

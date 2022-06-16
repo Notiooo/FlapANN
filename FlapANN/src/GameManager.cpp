@@ -2,6 +2,7 @@
 #include "GameManager.h"
 
 #include <chrono>
+#include <optional>
 #include <imgui/imgui.h>
 
 #include "Game.h"
@@ -31,9 +32,9 @@ GameManager::GameManager(const TextureManager& textureManager, sf::Vector2u scre
 	mGeneticAlgorithm.createPopulation();
 }
 
-bool GameManager::allBirdsDead()
+bool GameManager::allBirdsAreDead()
 {
-    return std::all_of(mBirds.begin(), mBirds.end(), [this](Bird& bird)
+    return std::all_of(mBirds.begin(), mBirds.end(), [this](const Bird& bird)
     {
         return bird.isDead() && bird.getPosition().x < 0;
     });
@@ -44,11 +45,10 @@ void GameManager::controlTopScreenBoundaries(Bird& currentBird)
     if (currentBird.getPosition().y < 0)
     {
 		currentBird.kill();
-        //currentBird.setPosition(currentBird.getPosition().x, 0);
     }
 }
 
-void GameManager::controlBottomScreenBoundaries(Bird& currentBird)
+void GameManager::controlBottomScreenBoundaries(Bird& currentBird) const
 {
     static auto groundTop = mScreenSize.y - mTextureManager.getResourceReference(Textures_ID::Ground).getSize().y;
     if (currentBird.getPosition().y + currentBird.getBirdBounds().height > groundTop)
@@ -65,25 +65,63 @@ void GameManager::controlGameBoundaries(Bird& currentBird)
     controlBottomScreenBoundaries(currentBird);
 }
 
+float GameManager::horizontalNormalizedDistanceBetweenBirdAndPipeset(const Bird& currentBird, const PipeSet& nearestPipe) const
+{
+	auto xDelta = currentBird.getPosition().x - nearestPipe.position().x;
+	float horizontalDistance = std::clamp(normalize(0, mScreenSize.x,std::abs(xDelta)), 0.f, 1.f);
+	horizontalDistance = (xDelta < 0) ? horizontalDistance : -horizontalDistance;
+	return horizontalDistance;
+}
+
+float GameManager::verticalNormalizedDistanceBetweenBirdAndPipeset(const Bird& currentBird, const PipeSet& nearestPipe) const
+{
+	auto yDelta = currentBird.getPosition().y - nearestPipe.position().y;
+	auto verticalDistance = std::clamp(normalize(0, mScreenSize.y, std::abs(yDelta)), 0.f, 1.f);
+	verticalDistance = (yDelta < 0) ? verticalDistance : -verticalDistance;
+	return verticalDistance;
+}
+
+float GameManager::normalizedVerticalBirdPosition(const Bird& currentBird) const
+{
+	return std::clamp(normalize(0, mScreenSize.y,
+	                            std::abs(currentBird.getPosition().y)), 0.f, 1.f);
+}
+
+float GameManager::distance(float x, float y)
+{
+	return std::sqrtf(std::powf(x, 2) + std::powf(y, 2));
+}
+
+float GameManager::calculateBirdFitnessScore(const Bird& currentBird, const float& distanceToGap)
+{
+	return currentBird.birdScore() - distanceToGap / 10.f;
+}
+
+std::pair<float, float> GameManager::normalizedDistancesBetweenBirdAndPipeset(std::list<Bird>::value_type& currentBird, const PipeSet& nearestPipe) const
+{
+	auto horizontalDistance = horizontalNormalizedDistanceBetweenBirdAndPipeset(currentBird, nearestPipe);
+	auto verticalDistance = verticalNormalizedDistanceBetweenBirdAndPipeset(currentBird, nearestPipe);
+
+	return { horizontalDistance, verticalDistance };
+}
+
 void GameManager::updateANN()
 {
-    auto iterator = 0;
+	if(mBirds.size() != mGeneticAlgorithm.population().size())
+	{
+		throw std::runtime_error("Number of birds is not equal to number of 'brains'");
+	}
+
+	auto birdNumber = 0;
     for(auto& currentBird : mBirds)
     {
-        auto& currentGenome = mGeneticAlgorithm.at(iterator);
-        const auto& nearestPipe = mPipesGenerator.sortedNearestPipeSetsInFront(currentBird.getPosition());
-		auto xDelta = currentBird.getPosition().x - nearestPipe.front()->position().x;
-		auto horizontalDistance = std::clamp(normalize(0, mScreenSize.x,std::abs(xDelta)), 0.f, 1.f);
-		horizontalDistance = (xDelta < 0) ? horizontalDistance : -horizontalDistance;
+        const auto& nearestPipe = *mPipesGenerator.sortedByDistancePipesetsInfrontOfBird(currentBird.getPosition()).front();
+        const auto& [horizontalDistance, verticalDistance] = normalizedDistancesBetweenBirdAndPipeset(currentBird, nearestPipe);
+        const auto& birdPositionY = normalizedVerticalBirdPosition(currentBird);
+		const auto& distanceToGap = distance(horizontalDistance, verticalDistance);
 
-		auto yDelta = currentBird.getPosition().y - nearestPipe.front()->position().y;
-		auto verticalDistance = std::clamp(normalize(0, mScreenSize.y, std::abs(yDelta)), 0.f, 1.f);
-		verticalDistance = (yDelta < 0) ? verticalDistance : -verticalDistance;
-
-        const auto& birdPositionY = std::clamp(normalize(0, mScreenSize.y, 
-                                                 std::abs(currentBird.getPosition().y)
-        ), 0.f, 1.f);
-        currentGenome.fitness = currentBird.birdScore - std::sqrtf(std::powf(horizontalDistance, 2) + std::powf(verticalDistance, 2)) / 10.f;
+		auto& currentGenome = mGeneticAlgorithm.at(birdNumber);
+        currentGenome.fitness = calculateBirdFitnessScore(currentBird, distanceToGap);
         currentGenome.performOnPredictedOutput({ horizontalDistance, verticalDistance, birdPositionY }, [&currentBird](fann_type* output)
         {
             if(output[0] > 0.5f)
@@ -91,7 +129,7 @@ void GameManager::updateANN()
                 currentBird.flap();
             }
         });
-        ++iterator;
+        ++birdNumber;
     }
 }
 
@@ -109,16 +147,28 @@ void GameManager::update(const sf::Time& deltaTime)
 	mBackground.update(deltaTime);
 	mGround.update(deltaTime);
 	mPipesGenerator.update(deltaTime);
-	
 
 	updateBirds(deltaTime);
 	updateANN();
 	handleCollision();
-	if (allBirdsDead())
+	if (allBirdsAreDead())
 	{
 		restartGame();
 		mGeneticAlgorithm.evolve();
 	}
+}
+
+std::optional<Bird*> GameManager::firstBirdAlive()
+{
+	const auto& firstAliveBird = 
+		std::find_if(mBirds.begin(), mBirds.end(), 
+			[](const Bird& bird) { return !bird.isDead(); });
+
+	if (firstAliveBird != mBirds.end())
+	{
+		return std::make_optional(&*firstAliveBird);
+	}
+	return std::nullopt;
 }
 
 void GameManager::updateImGui()
@@ -130,36 +180,6 @@ void GameManager::updateImGui()
 	for (auto& bird : mBirds)
 	{
 		bird.updateImGui();
-	}
-
-	if (!mBirds.empty())
-	{
-		static std::vector<float> vertical;
-		static std::vector<float> horizontal;
-		auto& firstBird = std::find_if(mBirds.begin(), mBirds.end(), [](const Bird& bird) { return !bird.isDead(); });
-		if (firstBird != mBirds.end())
-		{
-			const auto& nearestPipe = mPipesGenerator.sortedNearestPipeSetsInFront(firstBird->getPosition());
-			if (!nearestPipe.empty())
-			{
-				auto xDelta = firstBird->getPosition().x - nearestPipe.front()->position().x;
-			    auto horizontalDistance = std::clamp(normalize(0, mScreenSize.x,std::abs(xDelta)), 0.f, 1.f);
-				horizontalDistance = (xDelta < 0) ? horizontalDistance : -horizontalDistance;
-
-				auto yDelta = firstBird->getPosition().y - nearestPipe.front()->position().y;
-			    auto verticalDistance = std::clamp(normalize(0, mScreenSize.y, std::abs(yDelta)), 0.f, 1.f);
-				verticalDistance = (yDelta < 0) ? verticalDistance : -verticalDistance;
-
-				vertical.push_back(verticalDistance);
-				horizontal.push_back(horizontalDistance);
-				char overlayHor[32];
-				sprintf(overlayHor, "hor: %f", horizontalDistance);
-				char overlayVer[32];
-				sprintf(overlayVer, "ver: %f", verticalDistance);
-				ImGui::PlotLines("Horizontal", horizontal.data(), horizontal.size(), 0, overlayHor);
-				ImGui::PlotLines("Vertical", vertical.data(), vertical.size(), 0, overlayVer);
-			}
-		}
 	}
 }
 

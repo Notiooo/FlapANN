@@ -67,27 +67,32 @@ public:
 
     enum CrossoverStage
     {
-        PickTopTwoBests,
-        PickRandomBests,
-        PickRandomly
+        PickTopTwoBestUnits,
+        PickRandomBestUnits,
+        PickRandomUnit
     };
 
     GeneticAlgorithm(int population, int topEvolvingUnits, NetworkSettings settings);
     void evolve();
     int maxUnits() const;
     void createPopulation();
-    int currentGeneration();
+    int currentGeneration() const;
     std::vector<Unit> population();
     Unit& at(int index);
 
 private:
-    std::unique_ptr<Unit> crossover(const Unit& parentA, const Unit& parentB);
-    std::vector<Unit> sortByFitness(std::vector<Unit>population);
+    std::unique_ptr<Unit> crossover(const Unit& parentA, const Unit& parentB) const;
+    std::vector<Unit> sortByFitness(std::vector<Unit>population) const;
     std::vector<Unit> sortByIndex(std::vector<Unit> population) const;
-    bool bestUnitFailed();
+    bool doesBestUnitFailed();
     void clearPopulation();
     void checkBestUnitCorrectness();
-    std::unique_ptr<Unit> performCrossover(CrossoverStage crossoverStage);
+    std::unique_ptr<Unit> crossoverTwoRandomBestUnits();
+    std::unique_ptr<Unit> crossoverTwoRandomUnits();
+    std::unique_ptr<Unit> crossoverTwoBestUnits();
+    void reassignPopulation(std::vector<GeneticAlgorithm::Unit> sortedPopulation);
+    std::vector<GeneticAlgorithm::Unit> replaceWeakBirdsWithCrossovers(std::vector<GeneticAlgorithm::Unit>&& sortedPopulationByFitness);
+    void evolveOtherThanBestUnits();
     std::vector<Unit> bestUnits();
 
 private:

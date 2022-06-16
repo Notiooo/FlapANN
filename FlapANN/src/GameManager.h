@@ -1,4 +1,6 @@
 #pragma once
+#include <optional>
+
 #include "GeneticAlgorithm.h"
 #include "nodes/objects/background/Background.h"
 #include "nodes/objects/background/Ground.h"
@@ -37,6 +39,7 @@ public:
 	 * (distance = speed * time)
 	 */
 	void update(const sf::Time& deltaTime);
+	std::optional<Bird*> firstBirdAlive();
 
 	/**
 	 * \brief Updates the ImGui related code
@@ -71,11 +74,17 @@ public:
 
 private:
 	void restartGame();
-	bool allBirdsDead();
-    void controlTopScreenBoundaries(Bird& currentBird);
-    void controlBottomScreenBoundaries(Bird& currentBird);
+	bool areAllBirdsDead();
+	static void controlTopScreenBoundaries(Bird& currentBird);
+    void controlBottomScreenBoundaries(Bird& currentBird) const;
     void controlGameBoundaries(Bird& currentBird);
-    void updateANN();
+	float horizontalNormalizedDistanceBetweenBirdAndPipeset(const Bird& currentBird, const PipeSet& nearestPipe) const;
+	float verticalNormalizedDistanceBetweenBirdAndPipeset(const Bird& currentBird, const PipeSet& nearestPipe) const;
+	float normalizedVerticalBirdPosition(const Bird& currentBird) const;
+	static float distance(float x, float y);
+	static float calculateBirdFitnessScore(const Bird& currentBird, const float& distanceToGap);
+	std::pair<float, float> normalizedDistanceBetweenBirdAndPipeset(std::list<Bird>::value_type& currentBird, const PipeSet& nearestPipe) const;
+	void updateANN();
     void updateBirds(const sf::Time& deltaTime);
 
 private:

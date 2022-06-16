@@ -57,6 +57,8 @@ public:
 	 */
 	sf::FloatRect getBirdBounds() const;
 
+	float birdScore() const;
+
 private:
 	/**
 	 * \brief Determines if the bird is falling at this point.
@@ -85,10 +87,10 @@ private:
 	 * \param deltaTime the time that has passed since the game was last updated
 	 */
 	void updateRotation(const sf::Time& deltaTime);
+	void updateScore(const sf::Time& deltaTime);
 
-public:
-	float birdScore = 0;
 private:
+	float mBirdScore = 0;
 	float mJumpStrength = 185.f;
 	bool mIsKilled = false;
 	sf::Sprite mBird;

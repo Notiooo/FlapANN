@@ -11,7 +11,7 @@ Bird::Bird(const sf::Texture& birdTexture)
 
 void Bird::flap()
 {
-	if (!mIsKilled)
+	if (!isDead())
 	{
 		setVelocity({ 0.f, -mJumpStrength });
 	}
@@ -31,10 +31,9 @@ void Bird::handleThisEvents(const sf::Event& event)
 {
 	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
 	{
-		if (!mIsKilled)
+		if (!isDead())
 		{
 			flap();
-			//birdScore -= 0.5f;
 		}
 	}
 }
@@ -78,6 +77,19 @@ void Bird::updateRotation(const sf::Time& deltaTime)
 	rotate(calculateRotationChange(fallingThreshold) * deltaTime.asSeconds());
 }
 
+void Bird::updateScore(const sf::Time& deltaTime)
+{
+	if(!isDead())
+	{
+		mBirdScore += deltaTime.asSeconds();
+	}
+}
+
+float Bird::birdScore() const
+{
+	return mBirdScore;
+}
+
 void Bird::updateThis(const sf::Time& deltaTime)
 {
 	NodeMoveable::updateThis(deltaTime);
@@ -85,10 +97,7 @@ void Bird::updateThis(const sf::Time& deltaTime)
 	// It falls down slowly
 	accelerate({ 0.f, 500.f * deltaTime.asSeconds() });
 	updateRotation(deltaTime);
-	if(!mIsKilled)
-	{
-		birdScore += deltaTime.asSeconds();
-	}
+	updateScore(deltaTime);
 }
 
 sf::FloatRect Bird::getBirdBounds() const

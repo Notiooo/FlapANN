@@ -53,9 +53,9 @@ public :
 	 * \param position Point from which the distance is calculated
 	 * \return An ascending distance-sorted vector of Pipesets
 	 */
-	std::vector<const PipeSet*> sortedNearestPipeSets(const sf::Vector2f& position) const;
+	std::vector<const PipeSet*> sortedByDistancePipeSets(const sf::Vector2f& position) const;
 
-	std::vector<const PipeSet*> sortedNearestPipeSetsInFront(const sf::Vector2f& position) const;
+	std::vector<const PipeSet*> sortedByDistancePipesetsInfrontOfBird(const sf::Vector2f& position) const;
 
 	/**
 	 * \brief Checks if the bird and pipes are colliding
