@@ -123,7 +123,7 @@ void PipesGenerator::updateImGuiMovePatternRange()
 	auto movePatternRange = mMovePattern.patternRange();
 
 	ImGui::PushItemWidth(-textSize.x);
-	if(ImGui::SliderFloat(sliderText, &movePatternRange, 0.f, 2.f))
+	if(ImGui::SliderFloat(sliderText, &movePatternRange, 0.f, 1.5f))
 	{
 		mMovePattern.patternRange(movePatternRange);
 	}
@@ -136,7 +136,7 @@ void PipesGenerator::updateImGuiMovePatternSpeed()
 	auto movePatternSpeed = mMovePattern.patternSpeed();
 
 	ImGui::PushItemWidth(-textSize.x);
-	if(ImGui::SliderFloat(sliderText, &movePatternSpeed, 0.f, 8.f))
+	if(ImGui::SliderFloat(sliderText, &movePatternSpeed, 0.f, 5.f))
 	{
 		mMovePattern.patternSpeed(movePatternSpeed);
 	}
@@ -166,7 +166,7 @@ void PipesGenerator::drawThis(sf::RenderTarget& target, sf::RenderStates states)
 	}
 }
 
-std::vector<const PipeSet*> PipesGenerator::sortedNearestPipeSets(const sf::Vector2f& position) const
+std::vector<const PipeSet*> PipesGenerator::sortedByDistancePipeSets(const sf::Vector2f& position) const
 {
 	auto calculateHorizontalDistance = [&position](const sf::Vector2f& newPos)
 	{
@@ -188,6 +188,17 @@ std::vector<const PipeSet*> PipesGenerator::sortedNearestPipeSets(const sf::Vect
 	return pipeSetPtrs;
 }
 
+std::vector<const PipeSet*> PipesGenerator::sortedByDistancePipesetsInfrontOfPoint(const sf::Vector2f& position) const
+{
+	static const auto& pipeWidth = static_cast<float>(mTextures.getResourceReference(Textures_ID::Pipe_Green).getSize().x);
+	auto neartestPipes = sortedByDistancePipeSets(position);
+	neartestPipes.erase(
+		std::remove_if(neartestPipes.begin(), neartestPipes.end(),
+			[&position](const PipeSet* pipe) { return position.x > pipe->position().x + pipeWidth / 1.8f;  }),
+	neartestPipes.end());
+	return neartestPipes;
+}
+
 void PipesGenerator::checkCollision(Bird& bird) const
 {
 	for (const auto& pipeSet : mPipeSets)
@@ -203,4 +214,9 @@ void PipesGenerator::checkCollision(Bird& bird) const
 			}
 		}
 	}
+}
+
+void PipesGenerator::restart()
+{
+	mPipeSets.clear();
 }

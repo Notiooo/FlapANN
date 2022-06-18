@@ -69,6 +69,7 @@ private:
 	void loadResources();
 
 	static const sf::Time TIME_PER_FRAME; //!< The time it takes for one game frame to be generated.
+	static float TIME_SPEED_SCALAR; //!< The speed at which game time passes
 
 	static const int GAME_WIDTH; //!< Default game window width
 	static const int GAME_HEIGHT; //!< Default game window height
@@ -83,10 +84,8 @@ private:
 	 * This saves the memory used so as not to load the same font multiple times in multiple places.
 	 */
 	FontManager mFonts;
-
-	std::unique_ptr<GameManager> mGameManager;
-
-	TextureManager mTextures;
+	std::unique_ptr<GameManager> mGameManager; //!< Manager managing the game's gameplay operations
+	TextureManager mTextures; //!< A manager that stores references to textures in the game
 };
 
 

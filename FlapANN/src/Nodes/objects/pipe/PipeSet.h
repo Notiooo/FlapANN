@@ -75,7 +75,13 @@ public:
 	const Pipe& upperPipe() const;
 
 private:
+
+	/** Bottom pipe from the pipeset */
 	std::unique_ptr<Pipe> mBottomPipe;
+
+	/** Upper pipe from the pipeset */
 	std::unique_ptr<Pipe> mUpperPipe;
+
+	/** Text that is displayed between the pipes describing the size of the space between them */
 	sf::Text mOffsetBetweenPipesText;
 };

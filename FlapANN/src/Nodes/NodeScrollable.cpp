@@ -10,7 +10,7 @@ NodeScrollable::NodeScrollable(const sf::Texture& texture, const float& scrollSp
 {
 	setVelocity({ -mScrollSpeed, 0.f });
 	mBackground.setOrigin(0, 0);
-	makeTextureLonger(2.f);
+	makeTextureLonger(3.f);
 }
 
 void NodeScrollable::makeTextureLonger(const float& widthMultiplier)

@@ -4,6 +4,9 @@
 #include "nodes/NodeMoveable.h"
 #include "resources/Resources.h"
 
+/**
+ * \brief Pipe is an object that blocks birds and collision with it leads to death of the bird.
+ */
 class Pipe final : public NodeMoveable
 {
 public:
@@ -40,10 +43,20 @@ public:
 	 */
 	sf::FloatRect getPipeBounds() const;
 
+	/**
+	 * \brief Returns the speed at which the pipe is moving
+	 * \return The speed at which the pipe is moving
+	 */
 	static float pipeSpeed();
 
 private:
+
+	/** Pipe graphics drawn on screen */
 	sf::Sprite mPipe;
+
+	/** The pattern by which the pipes move */
 	MovePattern mCurrentMovePattern;
+
+	/** The speed at which the pipe moves */
 	inline static float mPipeSpeed = 40.f;
 };

@@ -61,7 +61,8 @@ project "FlapANN"
         {
             "%{wks.name}/vendor/lib/imgui/windows",
             "%{wks.name}/vendor/lib/imgui-sfml/windows",
-            "%{wks.name}/vendor/lib/SFML/windows"
+            "%{wks.name}/vendor/lib/SFML/windows",
+            "%{wks.name}/vendor/lib/fann/windows"
         }
 
         links
@@ -76,12 +77,16 @@ project "FlapANN"
             "vorbisenc",
             "vorbisfile",
             "vorbis",
-            "ogg"
+            "ogg",
+
+            -- FANN
+            "fann"
         }
 
         postbuildcommands
         {
             ('{COPYFILE} ../%{wks.name}/vendor/lib/SFML/windows/openal32.dll %{cfg.buildtarget.bundlepath}'),
+            ('{COPYFILE} ../%{wks.name}/vendor/lib/fann/windows/fann.dll %{cfg.buildtarget.bundlepath}'),
             ('{COPYDIR} ../%{wks.name}/resources %{cfg.buildtarget.bundlepath}/resources')
         }
 
@@ -90,29 +95,6 @@ project "FlapANN"
 
         filter {"configurations:Release", "system:windows"}
             links { "sfml-audio-s", "sfml-graphics-s", "sfml-network-s", "sfml-system-s", "sfml-window-s" }
-
-
---    filter "system:linux"
---        cppdialect "C++17"
---
---        libdirs
---        {
---            "%{wks.name}/vendor/lib/box2d/linux",
---            "%{wks.name}/vendor/lib/gtest/linux",
---            "%{wks.name}/vendor/lib/SFML/linux",
---            "%{wks.name}/vendor/lib/poly2tri/linux",
---            "%{wks.name}/vendor/lib/clipper/linux"
---        }
---
---        links { "glew32s", "sfml-audio", "sfml-graphics", "sfml-network", "sfml-system", "sfml-window" }
---        linkoptions { '-Wl,-rpath=./libs' }
---        
---        postbuildcommands
---        {
---            ('{MKDIR} %{cfg.buildtarget.bundlepath}/libs'),
---            ('{COPYFILE} ../%{wks.name}/vendor/lib/SFML/linux/* %{cfg.buildtarget.bundlepath}/libs'),
---            ('{COPYDIR} ../%{wks.name}/resources %{cfg.buildtarget.bundlepath}')
---        }
         
         filter "files:**.c"
             flags {"NoPCH"}
