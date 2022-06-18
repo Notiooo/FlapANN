@@ -88,11 +88,6 @@ void PipesGenerator::updateThis(const sf::Time& deltaTime)
 	updatePipesPosition(deltaTime);
 }
 
-int PipesGenerator::numberOfPipes() const
-{
-	return mPipeSets.size();
-}
-
 void PipesGenerator::updateImGuiOffsetBetweenLowerAndUpperPipe()
 {
 	const static auto& sliderText = "Offset between upper and lower pipe";
@@ -193,7 +188,7 @@ std::vector<const PipeSet*> PipesGenerator::sortedByDistancePipeSets(const sf::V
 	return pipeSetPtrs;
 }
 
-std::vector<const PipeSet*> PipesGenerator::sortedByDistancePipesetsInfrontOfBird(const sf::Vector2f& position) const
+std::vector<const PipeSet*> PipesGenerator::sortedByDistancePipesetsInfrontOfPoint(const sf::Vector2f& position) const
 {
 	static const auto& pipeWidth = static_cast<float>(mTextures.getResourceReference(Textures_ID::Pipe_Green).getSize().x);
 	auto neartestPipes = sortedByDistancePipeSets(position);

@@ -2,6 +2,9 @@
 #include "nodes/NodeScrollable.h"
 #include "resources/Resources.h"
 
+/**
+ * \brief A ground that moves quickly to create a sense of movement in the foreground
+ */
 class Ground final : public NodeScrollable
 {
 public:

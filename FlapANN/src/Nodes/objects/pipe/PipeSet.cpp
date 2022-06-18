@@ -47,21 +47,9 @@ void PipeSet::update(const sf::Time& deltaTime)
 
 void PipeSet::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	if(mMakeRed)
-	{
-		mBottomPipe->makeRed();
-		mUpperPipe->makeRed();
-	}
 	target.draw(*mBottomPipe, states);
 	target.draw(*mUpperPipe, states);
 	target.draw(mOffsetBetweenPipesText, states);
-
-	if(mMakeRed)
-	{
-		mBottomPipe->makeNormal();
-		mUpperPipe->makeNormal();
-		mMakeRed = false;
-	}
 
 	sf::Vertex line[] =
 	{

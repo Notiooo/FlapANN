@@ -2,6 +2,9 @@
 #include "nodes/NodeScrollable.h"
 #include "resources/Resources.h"
 
+/**
+ * \brief A background that moves gently to create the illusion of movement (parallax background)
+ */
 class Background final : public NodeScrollable
 {
 public:

@@ -67,6 +67,7 @@ public:
 	sf::Vector2f positionDelta(const sf::Time& deltaTime);
 
 private:
+
 	/** Currently selected pattern */
 	Pattern mCurrentMovePattern;
 

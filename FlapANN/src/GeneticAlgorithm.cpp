@@ -1,14 +1,45 @@
 #include "pch.h"
 #include "GeneticAlgorithm.h"
 
-GeneticAlgorithm::~GeneticAlgorithm()
-{
-    clearPopulation();
-}
-
 GeneticAlgorithm::Unit::~Unit()
 {
     fann_destroy(ann);
+}
+
+GeneticAlgorithm::Unit::Unit(): ann(nullptr), index(0), fitness(0)
+{}
+
+GeneticAlgorithm::Unit::Unit(fann* ann, int index, int fitness): ann(ann), index(index), fitness(fitness)
+{}
+
+GeneticAlgorithm::Unit::Unit(const Unit& rhs): ann(fann_copy(rhs.ann)), index(rhs.index), fitness(rhs.fitness)
+{}
+
+GeneticAlgorithm::Unit::Unit(Unit&& rhs) noexcept: ann(rhs.ann), index(rhs.index), fitness(rhs.fitness)
+{
+	rhs.ann = nullptr;
+}
+
+GeneticAlgorithm::Unit& GeneticAlgorithm::Unit::operator=(const Unit& rhs)
+{
+	if (this != &rhs)
+	{
+		ann = fann_copy(rhs.ann);
+		index = rhs.index;
+		fitness = rhs.fitness;
+		mMutateRate = rhs.mMutateRate;
+	}
+	return *this;
+}
+
+GeneticAlgorithm::Unit& GeneticAlgorithm::Unit::operator=(Unit&& rhs) noexcept
+{
+	ann = rhs.ann;
+	index = rhs.index;
+	fitness = rhs.fitness;
+	mMutateRate = rhs.mMutateRate;
+	rhs.ann = nullptr;
+	return *this;
 }
 
 void GeneticAlgorithm::Unit::performOnPredictedOutput(std::vector<fann_type> input, std::function<void(fann_type*)> perform) const
@@ -43,8 +74,8 @@ float GeneticAlgorithm::Unit::mutateGene(float gene)
     return gene;
 }
 
-GeneticAlgorithm::GeneticAlgorithm(int population, int topEvolvingUnits, NetworkSettings settings)
-    : mMaxUnits(population)
+GeneticAlgorithm::GeneticAlgorithm(int populationSize, int topEvolvingUnits, NetworkSettings settings)
+    : mSizeOfPopulation(populationSize)
     , mTopUnits(topEvolvingUnits)
     , mCurrentGeneration(0)
 {
@@ -58,22 +89,12 @@ bool GeneticAlgorithm::doesBestUnitFailed()
     return bestUnits().at(0).fitness < 0.f;
 }
 
-std::vector<GeneticAlgorithm::Unit> GeneticAlgorithm::sortByIndex(std::vector<Unit> population) const
-{
-    std::sort(population.begin(), population.end(), [](const Unit& a, const Unit& b)
-    {
-        return a.index < b.index;
-    });
-
-    return population;
-}
-
 void GeneticAlgorithm::clearPopulation()
 {
     mPopulation.clear();
 }
 
-void GeneticAlgorithm::checkBestUnitCorrectness()
+void GeneticAlgorithm::resetIfTheBestUnitIsTooWeak()
 {
     if(doesBestUnitFailed())
     {
@@ -103,14 +124,19 @@ std::unique_ptr<GeneticAlgorithm::Unit> GeneticAlgorithm::crossoverTwoBestUnits(
 	return crossover(bestUnits.at(0), bestUnits.at(1));
 }
 
-void GeneticAlgorithm::reassignPopulation(std::vector<GeneticAlgorithm::Unit> sortedPopulation)
+void GeneticAlgorithm::reassignIndexes()
 {
-	mPopulation = sortedPopulation;
 	int iterator = 0;
 	for(auto& unit : mPopulation)
 	{
 		unit.index = iterator++;
 	}
+}
+
+void GeneticAlgorithm::reassignPopulation(std::vector<GeneticAlgorithm::Unit> sortedPopulation)
+{
+	mPopulation = sortedPopulation;
+	reassignIndexes();
 }
 
 std::vector<GeneticAlgorithm::Unit> GeneticAlgorithm::replaceWeakBirdsWithCrossovers(std::vector<GeneticAlgorithm::Unit>&& sortedPopulationByFitness)
@@ -141,7 +167,7 @@ std::vector<GeneticAlgorithm::Unit> GeneticAlgorithm::replaceWeakBirdsWithCrosso
     return sortedPopulationByFitness;
 }
 
-void GeneticAlgorithm::evolveOtherThanBestUnits()
+void GeneticAlgorithm::evolveWeakUnits()
 {
 	reassignPopulation(replaceWeakBirdsWithCrossovers(sortByFitness(mPopulation)));
 	++mCurrentGeneration;
@@ -149,9 +175,8 @@ void GeneticAlgorithm::evolveOtherThanBestUnits()
 
 void GeneticAlgorithm::evolve()
 {
-    checkBestUnitCorrectness();
-
-    evolveOtherThanBestUnits();
+    resetIfTheBestUnitIsTooWeak();
+    evolveWeakUnits();
 }
 
 std::vector<GeneticAlgorithm::Unit> GeneticAlgorithm::sortByFitness(std::vector<GeneticAlgorithm::Unit> population) const
@@ -171,20 +196,20 @@ std::vector<GeneticAlgorithm::Unit> GeneticAlgorithm::bestUnits()
     return std::vector(sorted.begin(), sorted.begin() + mTopUnits);
 }
 
-int GeneticAlgorithm::maxUnits() const
+int GeneticAlgorithm::populationSize() const
 {
-    return mMaxUnits;
+    return mSizeOfPopulation;
 }
 
 void GeneticAlgorithm::createPopulation()
 {
-    for (int i = 0; i < maxUnits(); ++i)
+    for (int i = 0; i < populationSize(); ++i)
     {
         auto ann = fann_create_standard_array(mLayers.size(), mLayers.data());
         Unit unit = {ann, i, 0};
         mPopulation.push_back(unit);
     }
-    for(auto& unit : mPopulation)
+    for(const auto& unit : mPopulation)
     {
         fann_randomize_weights(unit.ann, -1.f, 1.f);
     }

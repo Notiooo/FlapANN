@@ -7,6 +7,9 @@
 #include "nodes/objects/bird/Bird.h"
 
 
+/**
+ * \brief The generator creates pipes based on the information and parameters provided
+ */
 class PipesGenerator : public NodeScene
 {
 	/**
@@ -33,8 +36,6 @@ public :
 	 */
 	void updateThis(const sf::Time& deltaTime) override;
 
-	int numberOfPipes() const;
-
 	/**
 	 * \brief Updates sliders and options related to PipesGenerator
 	 */
@@ -49,13 +50,19 @@ public :
 
 	/**
 	 * \brief Sorts pipesets by distance from a given point.
-	 * The closer the pipeset is to the first index is.
+	 * PipeSets are ordered by increasing distance.
 	 * \param position Point from which the distance is calculated
 	 * \return An ascending distance-sorted vector of Pipesets
 	 */
 	std::vector<const PipeSet*> sortedByDistancePipeSets(const sf::Vector2f& position) const;
 
-	std::vector<const PipeSet*> sortedByDistancePipesetsInfrontOfBird(const sf::Vector2f& position) const;
+	/**
+	 * \brief Sorts pipesets by distance from a given point considering only those on the front of the point
+	 * PipeSets are ordered by increasing distance.
+	 * \param position Point from which the distance is calculated
+	 * \return An ascending distance-sorted vector of Pipesets
+	 */
+	std::vector<const PipeSet*> sortedByDistancePipesetsInfrontOfPoint(const sf::Vector2f& position) const;
 
 	/**
 	 * \brief Checks if the bird and pipes are colliding
@@ -64,6 +71,10 @@ public :
 	 */
 	void checkCollision(Bird& bird) const;
 
+	/**
+	 * \brief Restarts the generator, starting generation again
+	 * and deleting the other generated pipes
+	 */
 	void restart();
 
 private:
@@ -136,10 +147,22 @@ private:
 	void updateImGuiMovePatternSpeed();
 
 private:
+	/** A manager that stores references to textures in the game */
 	const TextureManager& mTextures;
+
+	/** A manager that stores references to fonts in the game */
 	const FontManager& mFonts;
 
+	/**
+	 * Specifies the minimum and maximum distance being an additional offset
+	 * separating successive generated pipes in horizontal distance
+	 */
 	PipeOffset xCoordinate{ 85.f, 110.f };
+
+	/**
+	 * Specifies the additional vertical offset by which
+	 * the pipe can move (up/down).
+	 */
 	PipeOffset yCoordinate{ 30.f, 0.f };
 
 	/** Used to determine pipe clipping point */

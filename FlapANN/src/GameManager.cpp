@@ -40,7 +40,7 @@ bool GameManager::allBirdsAreDead()
     });
 }
 
-void GameManager::controlTopScreenBoundaries(Bird& currentBird)
+void GameManager::killIfExceedsTopScreenBoundary(Bird& currentBird)
 {
     if (currentBird.getPosition().y < 0)
     {
@@ -48,7 +48,7 @@ void GameManager::controlTopScreenBoundaries(Bird& currentBird)
     }
 }
 
-void GameManager::controlBottomScreenBoundaries(Bird& currentBird) const
+void GameManager::killIfExceedsBottomScreenBoundary(Bird& currentBird) const
 {
     static auto groundTop = mScreenSize.y - mTextureManager.getResourceReference(Textures_ID::Ground).getSize().y;
     if (currentBird.getPosition().y + currentBird.getBirdBounds().height > groundTop)
@@ -59,10 +59,10 @@ void GameManager::controlBottomScreenBoundaries(Bird& currentBird) const
     }
 }
 
-void GameManager::controlGameBoundaries(Bird& currentBird)
+void GameManager::killIfExceedsScreenBoundaries(Bird& currentBird)
 {
-    controlTopScreenBoundaries(currentBird);
-    controlBottomScreenBoundaries(currentBird);
+    killIfExceedsTopScreenBoundary(currentBird);
+    killIfExceedsBottomScreenBoundary(currentBird);
 }
 
 float GameManager::horizontalNormalizedDistanceBetweenBirdAndPipeset(const Bird& currentBird, const PipeSet& nearestPipe) const
@@ -94,13 +94,13 @@ float GameManager::distance(float x, float y)
 
 float GameManager::calculateBirdFitnessScore(const Bird& currentBird, const float& distanceToGap)
 {
-	return currentBird.birdScore() - distanceToGap / 10.f;
+	return currentBird.fitnessScore() - distanceToGap / 10.f;
 }
 
-std::pair<float, float> GameManager::normalizedDistancesBetweenBirdAndPipeset(std::list<Bird>::value_type& currentBird, const PipeSet& nearestPipe) const
+std::pair<float, float> GameManager::normalizedDistancesBetweenBirdAndPipeset(const Bird& currentBird, const PipeSet& nearestPipeset) const
 {
-	auto horizontalDistance = horizontalNormalizedDistanceBetweenBirdAndPipeset(currentBird, nearestPipe);
-	auto verticalDistance = verticalNormalizedDistanceBetweenBirdAndPipeset(currentBird, nearestPipe);
+	auto horizontalDistance = horizontalNormalizedDistanceBetweenBirdAndPipeset(currentBird, nearestPipeset);
+	auto verticalDistance = verticalNormalizedDistanceBetweenBirdAndPipeset(currentBird, nearestPipeset);
 
 	return { horizontalDistance, verticalDistance };
 }
@@ -115,7 +115,7 @@ void GameManager::updateANN()
 	auto birdNumber = 0;
     for(auto& currentBird : mBirds)
     {
-        const auto& nearestPipe = *mPipesGenerator.sortedByDistancePipesetsInfrontOfBird(currentBird.getPosition()).front();
+        const auto& nearestPipe = *mPipesGenerator.sortedByDistancePipesetsInfrontOfPoint(currentBird.getPosition()).front();
         const auto& [horizontalDistance, verticalDistance] = normalizedDistancesBetweenBirdAndPipeset(currentBird, nearestPipe);
         const auto& birdPositionY = normalizedVerticalBirdPosition(currentBird);
 		const auto& distanceToGap = distance(horizontalDistance, verticalDistance);
@@ -138,7 +138,7 @@ void GameManager::updateBirds(const sf::Time& deltaTime)
     for (auto currentBird = mBirds.begin(), birdEnd = mBirds.end(); currentBird != birdEnd; ++currentBird)
     {
         currentBird->update(deltaTime);
-        controlGameBoundaries(*currentBird);
+        killIfExceedsScreenBoundaries(*currentBird);
     }
 }
 
@@ -156,19 +156,6 @@ void GameManager::update(const sf::Time& deltaTime)
 		restartGame();
 		mGeneticAlgorithm.evolve();
 	}
-}
-
-std::optional<Bird*> GameManager::firstBirdAlive()
-{
-	const auto& firstAliveBird = 
-		std::find_if(mBirds.begin(), mBirds.end(), 
-			[](const Bird& bird) { return !bird.isDead(); });
-
-	if (firstAliveBird != mBirds.end())
-	{
-		return std::make_optional(&*firstAliveBird);
-	}
-	return std::nullopt;
 }
 
 void GameManager::updateImGui()

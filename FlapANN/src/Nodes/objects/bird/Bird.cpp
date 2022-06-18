@@ -85,7 +85,7 @@ void Bird::updateScore(const sf::Time& deltaTime)
 	}
 }
 
-float Bird::birdScore() const
+float Bird::fitnessScore() const
 {
 	return mBirdScore;
 }
